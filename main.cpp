@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Eigen/Dense"
 #include "net.h"
+#include "train.h"
 #include <typeinfo>
 
 using namespace Eigen;
@@ -8,7 +9,7 @@ using namespace std;
 
 int main()
 {
-	Net net;
+//	Net net;
 //	net.add_lay(3);
 //	net.add_lay(1, "softmax");
 //	
@@ -24,29 +25,49 @@ int main()
 //		cout << s << endl;
 	
 	
-//	MatrixXd m(2, 3);
-//	m << 1, 3, 4, 
+//	MatrixXd m(3, 3);
+//	m << 1, 3, 4,
+//		 2, 4, 4, 
 //		 4, 3, 1;
-//	cout << m << endl;
-//	cout << net.sigmoid(m) << endl;
+//	cout << m << endl << endl;
+////	cout << net.sigmoid(m) << endl;
+//	VectorXd n(3);
+//	n << 1,
+//		 1,
+//		 1;
 //	
+//	for(int i = 0; i != m.cols(); i++)
+//		m.col(i) = m.col(i) + n;
+//			
+////	m.row(1) = m.row(1).array() + 1;
 //	
-//	MatrixXd n(2,1);
+//	cout << m << endl; 
+	
+	Net net;
+	net.add_lay(3);
+	net.add_lay(1);
+	
+	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
+	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
+	
+	MatrixXd x(1, 3), y(1, 3);
+	x << 1, 2, 3;
+	y << 0.5, 1, 1.5;
+	
+//	Train tra(x, y);
 //	
-//	n << 2,
-//		 3;
+//	tra.calculate(net);
+//	
+//	tra.show_cal();
+//	
+//	net.predict(x, y); 
+//	
+	
+//	int n = 9;
+//	net.sum(n);
 //	cout << n << endl;
-////	n.resize(2, 3);
-//	auto b = m;
-////	b.fill(n);
-//	cout << b << endl;
-//	cout << m.array() + b.array() << endl;
 	
-	int n = 9;
-	net.sum(n);
-	cout << n << endl;
-	
-	
+	cout << 5*x << endl; 
 	
 	
   	return 0; 

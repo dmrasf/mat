@@ -13,7 +13,11 @@ public:
 	//训练函数 
 	bool train(Net&, int);
 	//计算用于训练的数据 
-	bool calculate(Net&); 
+	bool calculate(Net&);
+	
+	//test
+	void show_cal();
+	
 	~Train();
 private:
 	MatrixXd x_train;
@@ -22,6 +26,7 @@ private:
 	vector<MatrixXd> z;
 	//保存每层的输入 
 	vector<MatrixXd> e;
+	double rate = 0.1;
 };
 
 #endif
