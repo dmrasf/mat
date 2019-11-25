@@ -2,94 +2,55 @@
 #include "Eigen/Dense"
 #include "net.h"
 #include "train.h"
-#include <typeinfo>
 
 using namespace Eigen;
 using namespace std;
 
 int main()
 {
-//	Net net;
-//	net.add_lay(3);
-//	net.add_lay(1, "softmax");
-//	
-//	cout << net.get_NUM_LAY() << endl;
-//	cout << net.get_NUM_PAR() << endl;
-//	auto func = net.get_FUNC();
-//	func.push_back("dwc");
-//	for(auto s : func)
-//		cout << s << endl;
-//		
-//	auto fun = net.get_FUNC();
-//	for(auto s : fun)
-//		cout << s << endl;
 	
-	
-//	MatrixXd m(3, 3);
-//	m << 1, 3, 4,
-//		 2, 4, 4, 
-//		 4, 3, 1;
-//	cout << m << endl << endl;
-////	cout << net.sigmoid(m) << endl;
-//	VectorXd n(3);
-//	n << 1,
-//		 1,
-//		 1;
-//	
-//	for(int i = 0; i != m.cols(); i++)
-//		m.col(i) = m.col(i) + n;
-//			
-////	m.row(1) = m.row(1).array() + 1;
-//	
-//	cout << m << endl; 
-	
-	Net net;
-//	net.add_lay(3);
-	net.add_lay(1,"real");
-	
+	Net net(8);
+	net.add_lay(17);
+	net.add_lay(1);
 	
 	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
 	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
 	
-	MatrixXd x(1,3), y(1,3);
-	x << 1,2,3;
-	y << 5,10,15;
-	
-//	MatrixXd m(2, 3);
-//	m << 1,2,3,
-//		 3,4,5;
-//cout << m << endl;
-//	m.setRandom();
-//	cout << m << endl;
-	
-	
-//	MatrixXd g = (x - y).array()*y.array()*(1 - y.array()).array();
-	
+	MatrixXd x(8,17), y(1,17);
+
+	x << 2,3,3,2,1,2,3,3,3,2,1,1,2,1,3,1,2,
+		 2,2,2,2,2,1,1,1,1,3,3,2,1,1,1,2,2,
+		 2,3,2,3,2,2,2,2,3,1,1,2,2,3,2,2,3,
+		 1,1,1,1,1,1,2,1,2,1,3,3,2,2,1,3,2,
+		 3,3,3,3,3,2,2,2,2,1,1,1,3,3,2,1,2,
+		 1,1,1,1,1,2,2,1,1,2,1,2,1,1,2,1,1,
+		 0.697,0.744,0.634,0.608,0.556,0.403,0.481,0.437,0.666,0.243,0.245,0.343,0.639,0.657,0.360,0.593,0.719,
+		 0.460,0.376,0.264,0.318,0.215,0.237,0.149,0.211,0.091,0.267,0.057,0.099,0.161,0.198,0.370,0.042,0.103;
+    y << 1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0;
+		
 	Train tra(x, y);
-	
-	tra.calculate(net);
-	
-	tra.show_cal();	
-	
-	net.predict(x, y); 
-	
-	tra.train(net, 5);
-	net.predict(x, y); 
 
-//	cout << endl << endl << endl << "train:" << endl;
+	cout << endl << "训练前" << endl;
+	auto y_pre = net.predict(x, y);
+	cout << y_pre << endl; 
 	
-//	tra.calculate(net);
+	Net ne(8);
+	ne.add_lay(17);
+	ne.add_lay(1);
 	
-//	tra.show_cal();	
-	
-//	
-	
-//	int n = 9;
-//	net.sum(n);
-//	cout << n << endl;
-//	g.resize(1, 3);
+	for(int i = 500; i <= 5000; i += 500){
+		net = ne;
+		tra.train(net, i);
+		auto y_pre = net.predict(x, y);
+		cout << i << ":" << endl;
+		cout << y_pre << endl; 
+		double sum = 0.0;
+		for(int i = 0; i != y_pre.cols(); i++){
+			if(y(0, i) == 1 && y_pre(0, i) > 0.5 || y(0, i) == 0 && y_pre(0, i) < 0.5)
+				sum++;
+		}
+		cout << sum/y.cols() << endl;
+	}
 
-	
-	
   	return 0; 
 }

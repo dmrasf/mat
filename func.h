@@ -3,10 +3,11 @@
 
 class func
 {
-	public:
-		func();
-		~func();
-	protected:
+public:
+	func();
+
+
+	~func();
 };
 
 #endif

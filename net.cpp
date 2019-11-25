@@ -8,6 +8,15 @@ Net::Net(int n) : Input(n) {
     add_init_x(n);
 }
 
+Net& Net::operator = (const Net &net){
+	if(this != &net){
+		func = net.func;
+		layers = net.layers;
+		weights= net.weights;
+	}
+	return *this;
+}
+
 //添加层 
 bool Net::add_lay(int n, const string &fuc){
 	func.push_back(fuc);
@@ -16,11 +25,11 @@ bool Net::add_lay(int n, const string &fuc){
 	int m = (*(layers.end() - 1)).size();
     VectorXd v(n);
     v.setRandom();
-    layers.push_back(v);
+    layers.push_back(v.array().abs());
     //添加系数 
     MatrixXd a(n, m);
     a.setRandom();
-    weights.push_back(a);
+    weights.push_back(a.array().abs());
     return true;
 }
 
@@ -58,7 +67,7 @@ MatrixXd Net::relu(const MatrixXd &input){
 	
 }
 
-void Net::predict(const MatrixXd &x_test, const MatrixXd &y_test){
+MatrixXd Net::predict(const MatrixXd &x_test, const MatrixXd &y_test){
 	int i = 0;
 	MatrixXd temp = x_test;
 	for(; i != weights.size(); i++){
@@ -72,22 +81,21 @@ void Net::predict(const MatrixXd &x_test, const MatrixXd &y_test){
 		switch(fuc[0]){
 			case 's':
 				z = sigmoid(e);
-				break;
-			case 'r':
-				z = e;
-				break;		
+				break;	
 			default:
 				z = sigmoid(e);
 				break;
 		}	
 		temp = z;
 	}
-	cout << "y_predict = " << temp << endl;
+	return temp;
 }
 
 bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 	//x为输入矩阵 有多组  in 为每层的输入  out 为每层的输出 
 	int i = 0;
+	in.clear();
+	out.clear();
 	out.push_back(x);
 	for(; i != weights.size(); i++){
 		//当前的权值 
@@ -104,9 +112,9 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 			case 's':
 				z = sigmoid(e);
 				break;
-			case 'r':
-				z = e;
-				break;	
+//			case 'r':
+//				z = e;
+//				break;	
 			default:
 				z = sigmoid(e);
 				break;

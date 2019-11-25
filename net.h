@@ -11,6 +11,8 @@ class Net{
 public:
     Net();
     Net(int);
+    Net& operator = (const Net&);
+    
     bool add_lay(int, const string &fuc = "sigmoid");
     //计算所有参数 
 	int get_NUM_PAR() const;
@@ -19,7 +21,7 @@ public:
 	//每层的函数
 	const vector<string>& get_FUNC(); 
 	//预测
-	void predict(const MatrixXd&, const MatrixXd&);
+	MatrixXd predict(const MatrixXd&, const MatrixXd&);
 	//计算过程的输入输出 
 	bool calculate(MatrixXd&, vector<MatrixXd>&, vector<MatrixXd>&); 
 	
