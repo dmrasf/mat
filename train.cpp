@@ -23,20 +23,6 @@ bool Train::train(Net &net, int n){
 		n--;
 		//求一下每层的输入输出  z:输出(x)   e:输入 
 		calculate(net);
-		//当前 wi = wi - a*temp/z_i*w_(i+1)*(1-z_i)*z_i*z_(i-1)
-		//BP 
-//		auto lay_pre = (z - z_)*z(i-1) 
-//		int w_pre = 1;
-//		for(int i = net.get_NUM_LAY() - 1; i >= 0; i--){
-//			int i_z = i+1;
-//			int i_e = i;
-//			auto m = (1 - z[i_z]).array()*z[i_z].array();
-//			lay_pre/z[i_z]*w_pre*m;
-//			w_pre = 
-//			net.add_lay();
-//			
-//		}
-		
 		//g_pre = (y_tr-y).*y.*(1-y)
 		//for(1)
 		//rate*g_pre*z(i-1)
@@ -49,15 +35,25 @@ bool Train::train(Net &net, int n){
 		//		w = w - w_e/m
 		//	end
 		//
-		auto g = (y_train - z.back()).array()*z.back().array()*(1 - z.back().array()).array();
-		MatrixXd w_e;
+//		MatrixXd g = (y_train - z.back()).array()*z.back().array()*(1 - z.back().array()).array();
+		MatrixXd g = y_train - z.back();
+		MatrixXd w_e, b_e;
 		for(int i = net.get_NUM_LAY(); i > 0; i--){  //2 1 
 			//偏导 
 			w_e = rate*g.matrix()*z[i-1].transpose();
-			auto temp = g.transpose().matrix()*net.get_w(i);
-			g = z[i-1].array()*(1-z[i-1].array()).array()*temp.transpose().array();
-			
-			
+			b_e = rate*g.matrix();
+			MatrixXd temp = g.transpose().matrix()*net.get_w(i-1);
+			g = z[i-1].array()*(1 - z[i-1].array()).array()*temp.transpose().array();
+			//更新参数 
+			MatrixXd w_new = net.get_w(i-1).array() + w_e.array()/x_train.cols();
+			VectorXd b_new = net.get_b(i-1).array() - b_e.array().rowwise().mean();
+			cout << "w" << endl << net.get_w(i-1) << endl << endl;
+			net.update_w(i-1, w_new);
+			cout << "w_new" << endl << net.get_w(i-1) << endl << endl << endl;
+			cout << "b" << endl << net.get_b(i-1) << endl << endl;
+			net.update_b(i-1, b_new);
+			cout << "b_new" << endl << net.get_b(i-1) << endl << endl;
+			net.predict(x_train,y_train);
 		}
 	} 
 }

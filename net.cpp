@@ -19,6 +19,7 @@ bool Net::add_lay(int n, const string &fuc){
     layers.push_back(v);
     //添加系数 
     MatrixXd a(n, m);
+    a.setRandom();
     weights.push_back(a);
     return true;
 }
@@ -65,12 +66,15 @@ void Net::predict(const MatrixXd &x_test, const MatrixXd &y_test){
 		VectorXd b = layers[i+1];	
 		MatrixXd e = w*temp;
 		for(int j = 0; j != e.cols(); j++)
-			e.col(j) = e.col(j) + b;
+			e.col(j) = e.col(j) - b;
 		MatrixXd z;
 		std::string fuc = func[i];
 		switch(fuc[0]){
 			case 's':
 				z = sigmoid(e);
+				break;
+			case 'r':
+				z = e;
 				break;		
 			default:
 				z = sigmoid(e);
@@ -92,14 +96,17 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 		VectorXd b = layers[i+1];	
 		MatrixXd e = w*out[i];
 		for(int j = 0; j != e.cols(); j++)
-			e.col(j) = e.col(j) + b;
+			e.col(j) = e.col(j) - b;
 		MatrixXd z;
 		//当前层使用的激活函数 
 		std::string fuc = func[i];
 		switch(fuc[0]){
 			case 's':
 				z = sigmoid(e);
-				break;		
+				break;
+			case 'r':
+				z = e;
+				break;	
 			default:
 				z = sigmoid(e);
 				break;
@@ -123,7 +130,7 @@ const MatrixXd& Net::get_w(int lay){
 }
 
 const VectorXd& Net::get_b(int lay){
-	return layers[lay];
+	return layers[lay+1];
 }
 
 
