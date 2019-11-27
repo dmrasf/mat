@@ -139,13 +139,37 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 	}
 	return i == weights.size() && i+1 == layers.size();
 }
-
+//保存参数 
 bool Net::save_par(const string &path){
-	
+	ofstream out(path);
+	//输入层参数 
+	out << layers.size() << " ";
+	for(const auto c : layers)
+		out << c.size() << " ";
+	out << endl;
+	for(int i = 1; i < layers.size(); i++){
+		out << layers[i].transpose() << endl;
+		out << weights[i-1] << endl;
+	}
+	out.close();
 	return true;
 }
 
 bool Net::load_par(const string &path){
+	ifstream in(path);
+	//输入层参数 
+	string line;
+	while(getline(in, line)){
+		istringstream li(line);
+		string word;
+		while(getline(li, word, ' ')){
+			if(word.empty())
+				continue;
+			cout << stod(word) << endl;
+		}
+	}
+
+	in.close();
 	return true;
 }
 

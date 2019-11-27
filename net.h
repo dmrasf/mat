@@ -4,6 +4,7 @@
 #include "Eigen/Dense"
 #include <string>
 #include <iostream>
+#include <fstream> 
 using namespace Eigen;
 using namespace std;
 //保存所有待训练的参数 
@@ -29,7 +30,7 @@ public:
 	void update_w(int, MatrixXd&);
 	void update_b(int, VectorXd&);
 	
-	//保存训练后的参数
+	//保存及拿取训练后的参数
 	bool save_par(const string&); 
 	bool load_par(const string&);
 	
