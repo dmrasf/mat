@@ -67,9 +67,16 @@ Net::~Net(){}
 
 MatrixXd Net::sigmoid(const MatrixXd &input){
 	return (1/((-input).array().exp() + 1)).matrix();
+
+}
+MatrixXd Net::d_sigmoid(const MatrixXd &mat){
+	return mat.array()*(1 - mat.array()).array();
 }
 
 MatrixXd Net::relu(const MatrixXd &input){
+	
+}
+double Net::d_relu(const MatrixXd &mat){
 	
 }
 
@@ -87,7 +94,9 @@ MatrixXd Net::predict(const MatrixXd &x_test){
 		switch(fuc[0]){
 			case 's':
 				z = sigmoid(e);
-				break;	
+				break;
+			case 'r':
+				z = relu(e); 
 			default:
 				z = sigmoid(e);
 				break;
@@ -118,17 +127,26 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 			case 's':
 				z = sigmoid(e);
 				break;
-//			case 'r':
-//				z = e;
-//				break;	
+			case 'r':
+				z = relu(e);
+				break;	
 			default:
 				z = sigmoid(e);
 				break;
-		}	
-		in.push_back(e);
+		}
+		in.push_back(e);	
 		out.push_back(z);
 	}
 	return i == weights.size() && i+1 == layers.size();
+}
+
+bool Net::save_par(const string &path){
+	
+	return true;
+}
+
+bool Net::load_par(const string &path){
+	return true;
 }
 
 void Net::update_b(int i, VectorXd &new_b){

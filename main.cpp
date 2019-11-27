@@ -3,13 +3,45 @@
 #include "net.h"
 #include "train.h"
 #include <fstream> 
-#include<time.h>
+#include <opencv2/opencv.hpp>
 
 using namespace Eigen;
 using namespace std;
+using namespace cv;
 
-double predict(Net &net, int n = 10){
+//预测函数    需要预测的个数 
+void predict(Net &net, int n = 10);
+//训练函数   训练参数   训练函数    训练次数   一次训练的个数 
+void train(Net &net, Train &tra, int n = 1, int m = 5000);
+
+int main()
+{
+	//net  两层 
+	Net net(784);
+	net.add_lay(50);
+	net.add_lay(10);
+	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
+	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
+	Train tra;
+	//训练前预测 
+	predict(net, 10);
+	//训练前5000个训练两次 
+	train(net, tra, 2, 5000);
 	
+//	net.save_par("para.csv") 
+	
+	cout << "//===================================训练后=================================//" << endl;
+	cout << "//===================================训练后=================================//" << endl; 
+	cout << "//===================================训练后=================================//" << endl;
+	//训练后预测 
+	predict(net, 10);
+
+  	return 0; 
+}
+
+//预测函数 
+void predict(Net &net, int n){
+
 	ifstream r_test_y("test_y.csv");
 	int test_y_[10000];
 	int i = 0;
@@ -19,6 +51,8 @@ double predict(Net &net, int n = 10){
 		i++;
 	}
 	r_test_y.close();
+	
+	double sum = 0.0; 
 	
 	ifstream r1("test_x.csv");
 	string line;
@@ -42,38 +76,30 @@ double predict(Net &net, int n = 10){
 		MatrixXd::Index maxRow, maxCol;
 		y_pre.maxCoeff(&maxRow,&maxCol);
 		cout << "预测值 = "  << maxRow << endl << endl;
+		sum = sum + (test_y_[j] == maxRow);
 		j++;
 		if(j == n)
 			break;
 	}
-	r1.close();	
+	r1.close();
+	cout << "准确率 = " << sum/n << endl;
 }
-
-int main()
-{
+//训练函数 
+void train(Net &net, Train &tra, int n, int m){
+	
 	//读取训练标记数据 
 	ifstream r_train_y("train_y.csv");
-	int train_y_[60000];
+	int train_y_[m];
 	int i = 0;
 	string word;
 	while(getline(r_train_y, word, ',')){		
 		train_y_[i] = stoi(word);
 		i++;
+		if(i == m)
+			break;
 	}
 	r_train_y.close();
 
-	//net  两层 
-	Net net(784);
-	net.add_lay(50);
-	net.add_lay(10);
-	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
-	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
-	
-	//训练前预测 
-	predict(net, 10);
-	
-	Train tra;
-	
 	//定义训练数据 
 	MatrixXd train_y(1, 10);
 	train_y.setZero();
@@ -81,7 +107,6 @@ int main()
 	train_y.setZero();
 	
 	//训练次数 
-	int n = 1;
 	while(n--){
 		ifstream fr("train_x.csv");
 		string line;
@@ -90,7 +115,7 @@ int main()
 		while(getline(fr, line)){
 			//处理为 10维向量 
 			train_y.setZero();
-			train_y(0,train_y_[j]) = 1;
+			train_y(0, train_y_[j]) = 1;
 //			cout << train_y << endl;
 			istringstream record(line);
 			string word;
@@ -104,16 +129,13 @@ int main()
 			train_x = train_x/255;
 			tra.get_new(train_x.transpose(),train_y.transpose());
 			tra.train(net, 1); 
-			if(j == 5000)
+			if(j == m)
 				break;
 		}
 		fr.close();
 		cout << "第" << n << "次" <<endl; 
 	}
-	
-	cout << "//=================训练后====================//" << endl << endl; 
-	//训练后预测 
-	predict(net, 10);
+}
 
 //	Net net(8);
 //	net.add_lay(3);
@@ -163,5 +185,4 @@ int main()
 //		cout << sum/y.cols() << endl;
 //	}
 
-  	return 0; 
-}
+

@@ -3,9 +3,9 @@
 #include <iostream>
 using namespace std;
 
-Train::Train(){
-	
-}
+Train::Train() : Train(0.3) {}
+
+Train::Train(double rate) : rate(rate) {}
 
 void Train::get_new(const MatrixXd &x, const MatrixXd &y){
 	x_train = x;
@@ -23,7 +23,7 @@ bool Train::calculate(Net &net){
 
 //训练函数very important 
 bool Train::train(Net &net, int n){
-	//n:迭代次数  net:待训练的网络
+	//n:训练集个数  net:待训练的网络
 	while(n > 0){
 		n--;
 		//求一下每层的输入输出  z:输出(x)   e:输入 

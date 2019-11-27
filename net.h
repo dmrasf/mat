@@ -29,13 +29,19 @@ public:
 	void update_w(int, MatrixXd&);
 	void update_b(int, VectorXd&);
 	
-	//
+	//保存训练后的参数
+	bool save_par(const string&); 
+	bool load_par(const string&);
+	
+	//获取参数 更新参数用 
 	const MatrixXd& get_w(int);
 	const VectorXd& get_b(int); 
 	
-	//函数 
+	//不同的激活函数 及导 
 	MatrixXd sigmoid(const MatrixXd&);
+	MatrixXd d_sigmoid(const MatrixXd&); 
 	MatrixXd relu(const MatrixXd&);
+	double d_relu(const MatrixXd&);
 	~Net();
 private:
 	//初始化输入 
