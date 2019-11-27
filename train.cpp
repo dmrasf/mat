@@ -7,6 +7,11 @@ Train::Train(){
 	
 }
 
+void Train::get_new(const MatrixXd &x, const MatrixXd &y){
+	x_train = x;
+	y_train = y;
+}
+
 Train::Train(const MatrixXd &x, const MatrixXd &y){
 	x_train = x;
 	y_train = y;

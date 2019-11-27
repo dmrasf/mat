@@ -5,9 +5,8 @@ class func
 {
 public:
 	func();
-
-
 	~func();
+	
 };
 
 #endif

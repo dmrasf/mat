@@ -17,6 +17,12 @@ Net& Net::operator = (const Net &net){
 	return *this;
 }
 
+Net::Net(const Net &net){
+	func = net.func;
+	layers = net.layers;
+	weights= net.weights;
+}
+
 //添加层 
 bool Net::add_lay(int n, const string &fuc){
 	func.push_back(fuc);
@@ -25,11 +31,11 @@ bool Net::add_lay(int n, const string &fuc){
 	int m = (*(layers.end() - 1)).size();
     VectorXd v(n);
     v.setRandom();
-    layers.push_back(v.array().abs());
+    layers.push_back(v);
     //添加系数 
     MatrixXd a(n, m);
     a.setRandom();
-    weights.push_back(a.array().abs());
+    weights.push_back(a);
     return true;
 }
 
@@ -67,7 +73,7 @@ MatrixXd Net::relu(const MatrixXd &input){
 	
 }
 
-MatrixXd Net::predict(const MatrixXd &x_test, const MatrixXd &y_test){
+MatrixXd Net::predict(const MatrixXd &x_test){
 	int i = 0;
 	MatrixXd temp = x_test;
 	for(; i != weights.size(); i++){
@@ -140,19 +146,4 @@ const MatrixXd& Net::get_w(int lay){
 const VectorXd& Net::get_b(int lay){
 	return layers[lay+1];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

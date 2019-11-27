@@ -8,6 +8,7 @@ class Train
 {
 public:
 	Train();
+	void get_new(const MatrixXd&, const MatrixXd&);
 	//放入训练集 
 	Train(const MatrixXd&, const MatrixXd&);
 	//训练函数 
@@ -26,7 +27,7 @@ private:
 	vector<MatrixXd> z;
 	//保存每层的输入 
 	vector<MatrixXd> e;
-	double rate = 0.7;
+	double rate = 0.3;
 };
 
 #endif
