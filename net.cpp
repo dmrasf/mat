@@ -173,6 +173,7 @@ bool Net::load_par(const string &path){
 	add_init_x(Input);
 	//根据读取到的层数一层一层的读参数
 	for(int i = 1; i != lays.size(); i++){
+		func.push_back("sigmoid");
 		int n_pre = lays[i-1];
 		int n_now = lays[i];
 		double b[n_now];
