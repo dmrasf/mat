@@ -3,11 +3,11 @@
 #include "net.h"
 #include "train.h"
 #include <fstream> 
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 
 using namespace Eigen;
 using namespace std;
-using namespace cv;
+//using namespace cv;
 
 //预测函数    需要预测的个数 
 void predict(Net &net, int n = 10);
@@ -16,26 +16,22 @@ void train(Net &net, Train &tra, int n = 1, int m = 5000);
 
 int main()
 {
-	//net  两层 
-	Net net(784);
-	net.add_lay(50);
-	net.add_lay(10);
-	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
-	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
-	Train tra;
-	//训练前预测 
-	predict(net, 10);
-	//训练前5000个训练两次 
-	train(net, tra, 2, 5000);
+//	Net net(784);
+//	net.add_lay(50);
+//	net.add_lay(10);
+//	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
+//	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
+//	Train tra;
+//	//训练前预测 
+//	predict(net, 10);
+//	//训练前5000个训练两次 
+//	train(net, tra, 1, 60000);
+//	net.save_par("parameters.csv");
 	
-//	net.save_par("para.csv") 
+	Net n;
+	n.load_par("parameters.csv");
+	predict(n, 1000);
 	
-	cout << "//===================================训练后=================================//" << endl;
-	cout << "//===================================训练后=================================//" << endl; 
-	cout << "//===================================训练后=================================//" << endl;
-	//训练后预测 
-	predict(net, 10);
-
   	return 0; 
 }
 
@@ -51,9 +47,7 @@ void predict(Net &net, int n){
 		i++;
 	}
 	r_test_y.close();
-	
 	double sum = 0.0; 
-	
 	ifstream r1("test_x.csv");
 	string line;
 	double test_x_[784];
@@ -66,16 +60,16 @@ void predict(Net &net, int n){
 			test_x_[i] = stoi(word);
 			i++;
 		}
-		cout << endl << i << " " << j << endl;
+		cout << j << endl;
 		MatrixXd test_x = Map<Matrix<double, 1, 784>>(test_x_);
 		test_x = test_x/255;
 		auto y_pre = net.predict(test_x.transpose());
-		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
-		cout << "实际值 = " << test_y_[j] << endl;
-		cout << y_pre.transpose() << endl;
+//		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
+//		cout << "实际值 = " << test_y_[j] << endl;
+//		cout << y_pre.transpose() << endl;
 		MatrixXd::Index maxRow, maxCol;
 		y_pre.maxCoeff(&maxRow,&maxCol);
-		cout << "预测值 = "  << maxRow << endl << endl;
+//		cout << "预测值 = "  << maxRow << endl << endl;
 		sum = sum + (test_y_[j] == maxRow);
 		j++;
 		if(j == n)
@@ -116,7 +110,6 @@ void train(Net &net, Train &tra, int n, int m){
 			//处理为 10维向量 
 			train_y.setZero();
 			train_y(0, train_y_[j]) = 1;
-//			cout << train_y << endl;
 			istringstream record(line);
 			string word;
 			int i = 0;
