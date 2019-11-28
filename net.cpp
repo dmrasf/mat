@@ -143,7 +143,6 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 bool Net::save_par(const string &path){
 	ofstream out(path);
 	//输入层参数 
-	out << layers.size() << " ";
 	for(const auto c : layers)
 		out << c.size() << " ";
 	out << endl;
@@ -157,18 +156,55 @@ bool Net::save_par(const string &path){
 
 bool Net::load_par(const string &path){
 	ifstream in(path);
-	//输入层参数 
-	string line;
-	while(getline(in, line)){
-		istringstream li(line);
-		string word;
-		while(getline(li, word, ' ')){
-			if(word.empty())
-				continue;
-			cout << stod(word) << endl;
-		}
+	//第一行必要的参数  第一个为总层数   接下来的数为每层的神经元的个数 
+	vector<int> lays; 
+	string pars,par;
+	getline(in, pars);
+	istringstream line(pars);
+	while(getline(line, par, ' ')){
+		lays.push_back(stoi(par));
 	}
-
+	//清理掉原有的参数 
+	layers.clear();
+	weights.clear(); 
+	func.clear();
+	Input = lays[0];
+	Output = lays.back();
+	add_init_x(Input);
+	//根据读取到的层数一层一层的读参数
+	for(int i = 1; i != lays.size(); i++){
+		int n_pre = lays[i-1];
+		int n_now = lays[i];
+		double b[n_now];
+		double w[n_now*n_pre];
+		//读取b 
+		getline(in, pars);
+		istringstream line(pars);
+		int j = 0;
+		while(getline(line, par, ' ')){
+			if(par.empty())
+				continue;
+			b[j] = stod(par);
+			j++;
+		}
+		//添加层 
+		VectorXd lay = Map<VectorXd>(b, j);
+		layers.push_back(lay);
+		j = 0;
+		while(getline(in, pars)){
+			istringstream line(pars);
+			while(getline(line, par, ' ')){
+				if(par.empty())
+					continue;
+				w[j] = stod(par);
+				j++;
+			}
+			if(j == n_now*n_pre)
+				break;
+		}
+		MatrixXd lay_w = Map<MatrixXd, 0, InnerStride<1>>(w, n_pre, n_now);
+		weights.push_back(lay_w.transpose());
+	} 
 	in.close();
 	return true;
 }
