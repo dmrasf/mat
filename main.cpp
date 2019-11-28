@@ -32,6 +32,11 @@ int main()
 	n.load_par("parameters.csv");
 	predict(n, 1000);
 	
+	
+	
+	
+	
+	
   	return 0; 
 }
 
