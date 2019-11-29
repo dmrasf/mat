@@ -1,13 +1,12 @@
 #include <iostream>
 #include "Eigen/Dense"
 #include "net.h"
+#include "rbf.h"
 #include "train.h"
 #include <fstream> 
-//#include <opencv2/opencv.hpp>
 
 using namespace Eigen;
 using namespace std;
-//using namespace cv;
 
 //预测函数    需要预测的个数 
 void predict(Net &net, int n = 10);
@@ -16,27 +15,35 @@ void train(Net &net, Train &tra, int n = 1, int m = 5000);
 
 int main()
 {
+	Rbf r(3,4,2);
+	MatrixXd x(3, 2);
+	x << -1,0,
+		 3,2,
+		 4,5;
+	vector<MatrixXd> z;
+	r.calculate(x, z); 
+	for(auto c : z)
+		cout << c << endl;
+	VectorXd m(3);
+	m << 1,2,3;
+	cout << r.find_min(m) << endl;
+		
 //	Net net(784);
 //	net.add_lay(50);
-//	net.add_lay(10);
+//	net.add_lay(10);e
 //	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
 //	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
 //	Train tra;
 //	//训练前预测 
 //	predict(net, 10);
-//	//训练前5000个训练两次 
+//	//训练前5000个 1次 
 //	train(net, tra, 1, 60000);
-//	net.save_par("parameters.csv");
+//	net.save_par( "par.csv");
 	
-	Net n;
-	n.load_par("parameters.csv");
-	predict(n, 1000);
-	
-	
-	
-	
-	
-	
+//	Net n;
+//	n.load_par("par.csv");
+//	predict(n, 1000);
+
   	return 0; 
 }
 
@@ -98,13 +105,11 @@ void train(Net &net, Train &tra, int n, int m){
 			break;
 	}
 	r_train_y.close();
-
 	//定义训练数据 
 	MatrixXd train_y(1, 10);
 	train_y.setZero();
 	MatrixXd train_x(1, 784);
 	train_y.setZero();
-	
 	//训练次数 
 	while(n--){
 		ifstream fr("train_x.csv");
@@ -182,5 +187,4 @@ void train(Net &net, Train &tra, int n, int m){
 //		}
 //		cout << sum/y.cols() << endl;
 //	}
-
 

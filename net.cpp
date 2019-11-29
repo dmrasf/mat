@@ -91,16 +91,12 @@ MatrixXd Net::predict(const MatrixXd &x_test){
 			e.col(j) = e.col(j) - b;
 		MatrixXd z;
 		std::string fuc = func[i];
-		switch(fuc[0]){
-			case 's':
-				z = sigmoid(e);
-				break;
-			case 'r':
-				z = relu(e); 
-			default:
-				z = sigmoid(e);
-				break;
-		}	
+		if(fuc.compare("sigmoid"))
+			z = sigmoid(e);
+		else if(fuc.compare("relu"))
+			z = relu(e);
+		else
+			z = sigmoid(e);	
 		temp = z;
 	}
 	return temp;
@@ -123,17 +119,12 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 		MatrixXd z;
 		//当前层使用的激活函数 
 		std::string fuc = func[i];
-		switch(fuc[0]){
-			case 's':
-				z = sigmoid(e);
-				break;
-			case 'r':
-				z = relu(e);
-				break;	
-			default:
-				z = sigmoid(e);
-				break;
-		}
+		if(fuc.compare("sigmoid"))
+			z = sigmoid(e);
+		else if(fuc.compare("relu"))
+			z = relu(e);
+		else
+			z = sigmoid(e);
 		in.push_back(e);	
 		out.push_back(z);
 	}
