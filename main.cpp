@@ -15,18 +15,35 @@ void train(Net &net, Train &tra, int n = 1, int m = 5000);
 
 int main()
 {
-	Rbf r(3,4,2);
-	MatrixXd x(3, 2);
-	x << -1,0,
-		 3,2,
-		 4,5;
-	vector<MatrixXd> z;
-	r.calculate(x, z); 
-	for(auto c : z)
-		cout << c << endl;
-	VectorXd m(3);
-	m << 1,2,3;
-	cout << r.find_min(m) << endl;
+	Rbf r(1,4,1);
+	MatrixXd x(1,10), y(1,10);
+	x.setRandom();
+//	x << 0,1,2,3,4,5,6,7,8,9;
+	y = ((x.array()+1)*0.3).square();
+	
+	
+	Train tra(x, y);
+	int n = 500;
+	Train tr;
+	while(n--){
+		tra.train(r,1);
+	}
+			
+
+//	while(n--)
+//		tra.train(r, 1);
+	cout << "y_tra = " << y << endl;
+	cout << "y_pre = " << r.predict(x) << endl;
+	
+	
+//	Net net;
+//	net.add_lay(20);
+//	net.add_lay(1);
+//	Train t(x, y);
+//	
+//	t.train(net,10);
+//	auto m = net.predict(x);
+//	cout << "yuvyhj == " <<	m << endl;
 		
 //	Net net(784);
 //	net.add_lay(50);

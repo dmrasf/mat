@@ -26,7 +26,7 @@ private:
 	vector<MatrixXd> z;
 	//保存每层的输入 
 	vector<MatrixXd> e;
-	double rate;
+	double rate = 0.3;
 };
 
 #endif

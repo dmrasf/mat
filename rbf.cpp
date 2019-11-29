@@ -8,7 +8,6 @@ Rbf::Rbf(int x_n, int lay_n, int y_n){
 	c.setRandom();
 	b.resize(lay_n);
 	b.setRandom();
-	b = b.array().abs();
 	w.resize(y_n, lay_n);
 	w.setRandom();
 }
@@ -42,6 +41,9 @@ Rbf::~Rbf(){
 const MatrixXd& Rbf::get_c(){
 	return c;
 }
+const VectorXd& Rbf::get_b(){
+	return b;
+}
 const MatrixXd& Rbf::get_w(){
 	return w;
 }
@@ -59,14 +61,22 @@ void Rbf::update_w(const MatrixXd &w_new){
 VectorXd Rbf::Gaussian_kernel(const VectorXd &x){
 	MatrixXd temp = c;
 	VectorXd u;
-	for(int i = 0; i != temp.rows(); i++){
-		temp.row(i) = temp.row(i).array() - x.transpose().array();
-	}
+	for(int i = 0; i != temp.rows(); i++)
+		temp.row(i) = x.transpose().array() - temp.row(i).array();
 	temp = temp.array().square();
-	u = temp.rowwise().sum().array() / (b.array()*(-2));
+	u = temp.rowwise().sum().array() / (b.array().square()*(-2));
 	u = u.array().exp();
 	return u;
-} 
+}
+VectorXd Rbf::len(const VectorXd &x){
+	MatrixXd temp = c;
+	VectorXd u;
+	for(int i = 0; i != temp.rows(); i++)
+		temp.row(i) = temp.row(i).array() - x.transpose().array();
+	temp = temp.array().square();
+	u = temp.rowwise().sum();
+	return u;
+}
 
 bool Rbf::calculate(MatrixXd &x, vector<MatrixXd> &out){
 	//x为输入矩阵 有多组 out u d
@@ -82,14 +92,17 @@ bool Rbf::calculate(MatrixXd &x, vector<MatrixXd> &out){
 }
 
 int Rbf::find_min(const VectorXd &x){
-	MatrixXd temp = c*x;
+	MatrixXd temp = len(x); 
 	MatrixXd::Index minRow, minCol;
 	temp.minCoeff(&minRow,&minCol);
 	return minRow;
 }
 
-
-
-
-
+MatrixXd Rbf::predict(const MatrixXd &x_test){
+	MatrixXd u(b.size(), x_test.cols());
+	for(int i = 0; i != x_test.cols(); i++)
+		u.col(i) = Gaussian_kernel(x_test.col(i));
+	auto y_pre = w*u;
+	return y_pre; 
+} 
 

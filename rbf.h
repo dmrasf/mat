@@ -17,12 +17,12 @@ public:
     Rbf& operator = (const Rbf&);
     Rbf(const Rbf&);
     void resize(int, int, int);
-    
     //找到最近的类
 	int find_min(const VectorXd&); 
-    
+    MatrixXd predict(const MatrixXd&);
     //参数更新 
     const MatrixXd& get_c();
+    const VectorXd& get_b();
 	const MatrixXd& get_w();
 	void update_c(const MatrixXd&);
 	void update_b(const VectorXd&);
@@ -30,11 +30,12 @@ public:
     bool calculate(MatrixXd&, vector<MatrixXd>&);
     //高斯核函数 
 	VectorXd Gaussian_kernel(const VectorXd&);
+	VectorXd len(const VectorXd&);
 	~Rbf();
 private:
 	//输入到隐层的中心 
 	MatrixXd c;
-	//高斯核函数的权  >0 
+	//高斯核函数的权 
 	VectorXd b;
 	//隐层到输出的权值 
 	MatrixXd w;

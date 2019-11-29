@@ -56,41 +56,52 @@ bool Train::train(Net &net, int n){
 
 bool Train::train(Rbf &rbf, int n){
 	MatrixXd c = rbf.get_c();
-	//共有 c.rows() 类, 对每个类别建一个vector 
-	vector<vector<VectorXd>> temp(c.rows());
-	//计数 需要用它计算新的c和b 
 	VectorXd sum(c.rows());
 	sum.setZero(); 
-	MatrixXd c_new(x_train.rows(), c.rows());
+	MatrixXd c_new(c.rows(), x_train.rows()), len(c.rows(), x_train.cols());
 	c_new.setZero();
-	//归类并计算平均值 
+	//归类并计算平均值  ？好像不应该随机初始化聚类中心  
 	for(int i = 0; i != x_train.cols(); i++){
 		//寻找最小距离的类 
 		int min_c = rbf.find_min(x_train.col(i));
-		c_new.col(min_c) = c_new.col(min_c).array() + x_train.col(i).array();
-		//保存到类中 
-		temp[min_c].push_back(x_train.col(i));
+		c_new.row(min_c) = c_new.row(min_c).array() + x_train.col(i).transpose().array();
 		//对应类的计数加一 
 		sum(min_c) = sum(min_c) + 1;
+		len.col(i) = rbf.len(x_train.col(i));
 	}
-	VectorXd b_new(c.rows());
-	b_new.setZero();
-	//遍历每个类中的每个元素 
-	for(int i = 0; i != temp.size(); i++){
-		//求取平均值 
-		c_new.col(i) = c_new.col(i).array() / sum(i);
-		for(const VectorXd &x : temp[i]){
-			b_new(i) = x.transpose() * c_new.col(i);
-		}
-		b_new(i) = b_new(i) / sum(i);
+	//遍历每个类中的每个元素  求取平均值 
+	for(int i = 0; i != sum.size(); i++){
+//		c_new.row(i) = (c_new.row(i).array() + c.row(i).array()) / (sum(i)+1);
+		c_new.row(i) = c_new.row(i).array() / sum(i);
 	}
-	rbf.update_c(c_new.transpose());
-	rbf.update_b(b_new);
 	//计算输出  隐层(z[0])和输出层(z[1])   
 	rbf.calculate(x_train, z);
-	MatrixXd w_new = rbf.get_w();
-	auto e = z[1].array() - y_train.array();
-	w_new = w_new.array() - rate*(e.matrix()*z[0].transpose()).array();
+	//用BP算w和b
+	MatrixXd u = z[0], y_output = z[1];
+	MatrixXd E = y_output.array() - y_train.array();
+	MatrixXd w_new = rbf.get_w().array() - rate*(E*u.transpose()).array()/x_train.cols();
+	VectorXd b_new = rbf.get_b().array() - rate*((rbf.get_w().transpose()*E).array()*u.array()*len.array()).rowwise().mean()/rbf.get_b().array().cube();
+	for(int i = 0; i != sum.size(); i++){
+		if(sum(i) != 0){
+			c.row(i) = c_new.row(i);
+		}
+	}	
+	
+//	MatrixXd temp_b = rbf.get_b(), temp_c  = rbf.get_c();
+//	temp_b.setZero();
+//	temp_c.setZero();
+//	for(int i = 0; i != x_train.cols(); i++){
+//		temp_b = rate*((rbf.get_w().transpose()*E).array()*u.array()).rowwise().mean()/rbf.get_b().array();
+//		MatrixXd x_c = rbf.get_c();
+//		for(int i = 0; i != x_train.rows(); i++){
+//			x_c.row(i) = x_train.col(i).transpose().array() - x_c.row(i).array();
+//			temp_c.row(i) = temp_c.row(i).array() + x_c.row(i).array()*temp_b.row(i).array();	
+//		}
+//	}
+//	c = temp_c/x_train.cols();
+
+	rbf.update_c(c);
+	rbf.update_b(b_new);
 	rbf.update_w(w_new);
 }
 
