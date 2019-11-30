@@ -2,6 +2,7 @@
 #define TRAIN_H
 #include "net.h"
 #include "rbf.h"
+#include "clustering.h"
 
 class Train
 {
@@ -14,6 +15,7 @@ public:
 	//训练函数 
 	bool train(Net&, int);
 	bool train(Rbf&, int);
+	bool train(Clustering&, int);
 	//计算用于训练的数据 
 	bool calculate(Net&);
 	//test

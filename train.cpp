@@ -105,6 +105,10 @@ bool Train::train(Rbf &rbf, int n){
 	rbf.update_w(w_new);
 }
 
+bool Train::train(Clustering &clus, int n){
+	clus.train(x_train, y_train, n, "k_means");
+}
+
 void Train::show_cal(){
 	cout << "z0 = " << endl;
 	cout << z[0] << endl;

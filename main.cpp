@@ -2,8 +2,13 @@
 #include "Eigen/Dense"
 #include "net.h"
 #include "rbf.h"
+#include "clustering.h"
 #include "train.h"
-#include <fstream> 
+#include <fstream>
+#include <windows.h>
+#include <cstdio>
+#include <bitset>
+#include <iomanip>
 
 using namespace Eigen;
 using namespace std;
@@ -12,29 +17,46 @@ using namespace std;
 void predict(Net &net, int n = 10);
 //训练函数   训练参数   训练函数    训练次数   一次训练的个数 
 void train(Net &net, Train &tra, int n = 1, int m = 5000);
+//读取图片 
+bool read_bmp(const char*); 
 
 int main()
 {
-	Rbf r(1,4,1);
 	MatrixXd x(1,10), y(1,10);
-	x.setRandom();
-//	x << 0,1,2,3,4,5,6,7,8,9;
-	y = ((x.array()+1)*0.3).square();
-	
+	x << 0,1,2.3,1.3,2.4,5,6.6,5.7,4.8,5;
+//	y = ((x.array().square()+1)*0.1).square();
+	y << 1,1,1,1,1,0,0,0,0,0;
+	MatrixXd cla(1,2), lab(2,1);
+	cla << 2, 5;
+	lab << 0,
+		   1;
+//	Clustering clu(cla, lab);
+	Clustering clu(2, 1);
 	
 	Train tra(x, y);
-	int n = 500;
-	Train tr;
-	while(n--){
-		tra.train(r,1);
-	}
-			
-
-//	while(n--)
-//		tra.train(r, 1);
-	cout << "y_tra = " << y << endl;
-	cout << "y_pre = " << r.predict(x) << endl;
+	tra.train(clu, 10);
+	auto y_pre = clu.predict(x);
+	cout << "y = " << endl << y << endl;
+	cout << "y_pre = " << endl << y_pre << endl;
 	
+	
+//	read_bmp("5.bmp");
+	
+//	Rbf r(2,20,2);
+//	MatrixXd x(2,10), y(2,10);
+////	x.setRandom();
+//	x << 0,1,2,3,4,5,6,7,8,9,
+//		 3,4,5,6,7,8,9,1,2,3;
+//	y = ((x.array().square()+1)*0.1).square();
+//	Train tra(x, y);
+//	int n = 1000;
+//	Train tr;
+//	while(n--){
+//		tra.train(r,1);
+//	}
+//
+//	cout << "y_tra = " << endl << y << endl;
+//	cout << "y_pre = " << endl << r.predict(x) << endl;
 	
 //	Net net;
 //	net.add_lay(20);
@@ -62,6 +84,58 @@ int main()
 //	predict(n, 1000);
 
   	return 0; 
+}
+
+bool read_bmp(const char *name){
+	FILE *bmp = fopen(name, "rb");
+	
+//	BITMAPFILEHEADER file_h;
+//	BITMAPINFOHEADER info_h;
+//	RGBQUAD rgb;
+//		
+//	fread(&file_h, sizeof(BITMAPFILEHEADER), 1, bmp);
+//	fread(&info_h, sizeof(BITMAPINFOHEADER), 1, bmp);
+//	fread(&rgb, sizeof(RGBQUAD), 1, bmp);
+//	
+//	cout << sizeof(info_h) << endl;
+//	cout << rgb.rgbBlue << endl;
+//	cout << rgb.rgbReserved <<endl;
+//	
+//	cout << info_h.biHeight << endl;
+//	cout << info_h.biWidth << endl;
+//	cout << info_h.biSize << endl;
+//	cout << info_h.biClrUsed << endl;
+//	cout << info_h.biSizeImage << endl;
+//	cout << info_h.biBitCount << endl;
+//	cout << info_h.biPlanes << endl;
+//	
+////	cout << file_h.bfType << endl;
+//	cout << file_h.bfSize << endl;
+//	cout << file_h.bfOffBits << endl;
+//	
+//	fseek(bmp, 62, 0);
+//	int n[280*36];
+//	int m = 0;
+//	for(int i = 0; i != 280; i++){
+//		for(int j = 0; j != 36; j++){
+//			fread(&m, 1, 1, bmp);
+//			cout << setw(5) << (~m)+256; 
+//			n[i*36+j] = (~m)+256;
+//		}
+//		cout << endl;
+//	}
+//	fseek(bmp,0,0);
+	FILE *fw = fopen("we.bmp", "ab");
+//	fwrite(&bmp,sizeof(BITMAPFILEHEADER),1,fw);  //写入文件头
+//	fseek(bmp, 14, 0);
+//	fwrite(&bmp,sizeof(BITMAPINFOHEADER),1,fw);
+//	fseek(bmp, 54, 0);
+//	fwrite(&bmp,sizeof(RGBQUAD),1,fw);
+	fwrite(&bmp,1,10142,fw);
+//	fwrite(&n, 1, 280*36, fw);
+	fclose(fw); 
+	
+	fclose(bmp);
 }
 
 //预测函数 
@@ -153,7 +227,6 @@ void train(Net &net, Train &tra, int n, int m){
 				break;
 		}
 		fr.close();
-		cout << "第" << n << "次" <<endl; 
 	}
 }
 
