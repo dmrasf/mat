@@ -11,11 +11,11 @@ using namespace std;
 class Clustering
 {
 public:
-	Clustering();
+//	Clustering();
 	Clustering(const MatrixXd&, const VectorXd&);
 	Clustering(int, int);
 	void train(const MatrixXd&, const MatrixXd&, int, const string&);
-	void k_means(const MatrixXd&, int);
+	void k_means(const MatrixXd&, const MatrixXd&, int);
 	void lvq(const MatrixXd&, const MatrixXd&, int);
 	VectorXd predict(const MatrixXd&);
 	int find_min(const VectorXd&);
