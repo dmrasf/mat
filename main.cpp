@@ -24,47 +24,87 @@ bool read_bmp(const char*);
 void data(MatrixXd&, const char*, int m);
 int main()
 {
-
+//
 //	MatrixXd x(2,16), y(1,16);
 //	x << 3,4,3,4,-4,-2,-5,-3,37,23,54,23,-0.3,-0.5,-0.7,-0.6,
 //		 4,5,3,2,6,7,4,5,-4,-3,-4,-5,-1,-1,-1.3,-0.9; 
 //	y << 0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3;
-//	
+//
 //	Clustering clu(4, 2);
 //	Train tra(x, y);
-//	tra.train(clu, 100);
+//	tra.train(clu, 1000);
 //	auto y_pre = clu.predict(x);
 //	cout << "y = " << endl << y << endl;
 //	cout << "y_pre = " << endl << y_pre.transpose() << endl;
 	
-	Clustering clu(10, 784);
-	Train tra;
-	train(clu, tra, 20, 10000);
-	predict(clu, 1500);
+//	int n = 2000;
+//	MatrixXd x(784, n), y(1, n);
+//	data(x, "test_x.csv", n);
+//	ifstream r_y("test_y.csv");
+//	int i = 0;
+//	string word;
+//	while(getline(r_y, word, ',')){		
+//		y(0, i) = stoi(word);
+//		i++;
+//		if(i == n)
+//			break;
+//	}
+//	MatrixXd cla(784,10);
+//	int s[10] = {0,0,0,0,0,0,0,0,0,0};
+//	cla.setZero();
+//	for(int i = 0; i != y.cols(); i++){
+//		cla.col(y(0,i)) = cla.col(y(0,i)).array() + x.col(y(0,i)).array();
+//		s[int(y(0,i))] = s[int(y(0,i))] + 1;
+//	}
+//	for(int i = 0; i != cla.cols(); i++){
+//		cla.col(i) = cla.col(i)/s[i];
+//		cout << s[i] << endl;
+//	} 
+//	MatrixXd lab(1, 10);
+//	lab << 0,1,2,3,4,5,6,7,8,9;
+//	Clustering clu(cla, lab.transpose());
+//	
+
+	
+//	train(clu, tra, 4, 500);
+//	predict(clu, 100);
 	
 	
 //	read_bmp("5.bmp");
 	
-//	Rbf r(2,20,2);
-//	MatrixXd x(2,10), y(2,10);
-////	x.setRandom();
-//	x << 0,1,2,3,4,5,6,7,8,9,
-//		 3,4,5,6,7,8,9,1,2,3;
-//	y = ((x.array().square()+1)*0.1).square();
+	
+	
+//	
+//	int m = 100;
+//	MatrixXd x(784,m), y(10,m);
+//	data(x, "train_x.csv", m);
+//	y.setZero(); 
+//	ifstream r_train_y("train_y.csv");
+//	int i = 0;
+//	string word;
+//	while(getline(r_train_y, word, ',')){		
+//		y(stoi(word), i) = 1;
+//		i++;
+//		if(i == m)
+//			break;
+//	}
+//	
+//	Rbf r(784,100,10);
 //	Train tra(x, y);
-//	int n = 1000;
+//	int n = 5;
 //	Train tr;
 //	while(n--){
 //		tra.train(r,1);
+//		cout << n << endl;
 //	}
 //
-//	cout << "y_tra = " << endl << y << endl;
-//	cout << "y_pre = " << endl << r.predict(x) << endl;
+//	cout << "y_tra = " << endl << y.col(1) << endl;
+//	cout << "y_pre = " << endl << r.predict(x).col(1) << endl;
 	
 
 		
 //	Net net(784);
-//	net.add_lay(50);
+//	net.add_lay(50,"relu");
 //	net.add_lay(10);
 //	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
 //	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
@@ -72,13 +112,28 @@ int main()
 //	//训练前预测 
 //	predict(net, 10);
 //	//训练前5000个 1次 
-//	train(net, tra, 1, 60000);
+//	train(net, tra, 2, 5000);
 //	net.save_par( "par.csv");
 	
-//	Net n;
-//	n.load_par("par.csv");
-//	predict(n, 1000);
+	Net n;
+	n.load_par("par.csv");
+	predict(n, 100);
 
+//	Net net;
+//	net.add_lay(4, "relu");
+//	net.add_lay(1, "linear");
+//	
+//	MatrixXd x(1, 10),y(1, 10);
+//	x << 1,2,3,4,5,6,7,8,9,10;
+////	y <<0,0,0,0,0,1,1,1,1,1;
+//	y = x.array()*0.2; 
+//	
+//	Train tra(x, y);	
+//	tra.train(net, 5);
+//	
+//	cout << y << endl;
+//	cout << net.predict(x) << endl;
+	
   	return 0; 
 }
 
@@ -102,9 +157,9 @@ void train(Clustering &clu, Train &tra, int n, int m){
 void predict(Clustering &clu, int n){
 	double sum = 0.0;
 	MatrixXd x_test(784, n), y_test(1, n);
-	data(x_test, "test_x.csv", n);
+	data(x_test, "train_x.csv", n);
 	auto y_pre = clu.predict(x_test);
-	ifstream r_test_y("test_y.csv");
+	ifstream r_test_y("train_y.csv");
 	int i = 0;
 	string word;
 	while(getline(r_test_y, word, ',')){		
@@ -224,12 +279,12 @@ void predict(Net &net, int n){
 		MatrixXd test_x = Map<Matrix<double, 1, 784>>(test_x_);
 		test_x = test_x/255;
 		auto y_pre = net.predict(test_x.transpose());
-//		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
-//		cout << "实际值 = " << test_y_[j] << endl;
+		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
+		cout << "实际值 = " << test_y_[j] << endl;
 //		cout << y_pre.transpose() << endl;
 		MatrixXd::Index maxRow, maxCol;
 		y_pre.maxCoeff(&maxRow,&maxCol);
-//		cout << "预测值 = "  << maxRow << endl << endl;
+		cout << "预测值 = "  << maxRow << endl << endl;
 		sum = sum + (test_y_[j] == maxRow);
 		j++;
 		if(j == n)
@@ -282,8 +337,10 @@ void train(Net &net, Train &tra, int n, int m){
 			tra.train(net, 1); 
 			if(j == m)
 				break;
+			cout << j << endl;
 		}
 		fr.close();
+		cout << n << endl;
 	}
 }
 

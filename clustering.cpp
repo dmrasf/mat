@@ -63,7 +63,17 @@ void Clustering::k_means(const MatrixXd &x_train, const MatrixXd &y_train, int n
 }
 void Clustering::lvq(const MatrixXd &x_train, const MatrixXd &y_train, int n){
 	while(n--){
-			
+		for(int i = 0; i != x_train.cols(); i++){
+			auto x = x_train.col(i);
+			double y = y_train(0, i);
+			int min_dis = find_min(x);
+			cout << "y = " << y << "  min = " << min_dis << "  k = " << k(min_dis) << endl;
+			if(k(min_dis) == y)
+				clas.col(min_dis) = clas.col(min_dis).array() + rate*(x.array()-clas.col(min_dis).array());
+			else
+				clas.col(min_dis) = clas.col(min_dis).array() - rate*(x.array()-clas.col(min_dis).array());
+		}
+		cout << n << endl;
 	}
 }
 //寻找最近的中心向量的函数 

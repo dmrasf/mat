@@ -20,7 +20,7 @@ public:
 	//层数
 	int get_NUM_LAY() const;
 	//每层的函数
-	const vector<string>& get_FUNC(); 
+	const string& get_FUNC(int); 
 	//预测
 	MatrixXd predict(const MatrixXd&);
 	//计算过程的输入输出 
@@ -38,7 +38,9 @@ public:
 	MatrixXd sigmoid(const MatrixXd&);
 	MatrixXd d_sigmoid(const MatrixXd&); 
 	MatrixXd relu(const MatrixXd&);
-	double d_relu(const MatrixXd&);
+	MatrixXd d_relu(const MatrixXd&);
+	MatrixXd linear(const MatrixXd&);
+	MatrixXd d_linear(const MatrixXd&);
 	virtual ~Net();
 protected://派生类可访问 
 	//初始化输入 
@@ -49,8 +51,8 @@ protected://派生类可访问
 	vector<string> func; 
 	//权值  
     vector<MatrixXd> weights;
-	int Input;
-	int Output; 
+	int Input = -1;
+	int Output = -1; 
 };
 
 #endif

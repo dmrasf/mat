@@ -18,6 +18,7 @@ public:
 	bool train(Clustering&, int);
 	//计算用于训练的数据 
 	bool calculate(Net&);
+	MatrixXd get_d(Net&, int, const MatrixXd&);
 	//test
 	void show_cal();
 	~Train();

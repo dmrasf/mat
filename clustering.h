@@ -23,6 +23,7 @@ public:
 private:
 	MatrixXd clas;
 	VectorXd k;
+	double rate = 0.01;
 };
 
 #endif

@@ -35,7 +35,10 @@ bool Train::train(Net &net, int n){
 		//		w = w - w_e/m
 		//	end
 		//
-		MatrixXd g = (z.back() - y_train).array()*z.back().array()*(1 - z.back().array()).array();
+		
+		MatrixXd d_func = get_d(net, net.get_NUM_LAY(), z.back());
+		MatrixXd g = (z.back() - y_train).array()*d_func.array();
+//		MatrixXd g = (z.back() - y_train).array();//*z.back().array()*(1 - z.back().array()).array();
 //		cout << n << " : " << endl; 
 		MatrixXd w_e, b_e;
 		for(int i = net.get_NUM_LAY(); i > 0; i--){  //2 1 
@@ -43,8 +46,10 @@ bool Train::train(Net &net, int n){
 			w_e = g.matrix()*z[i-1].transpose();
 			b_e = g.matrix();
 			//下一个g 
+			d_func = get_d(net, i-1, z[i-1]);
 			MatrixXd temp = g.transpose().matrix()*net.get_w(i-1);
-			g = z[i-1].array()*(1 - z[i-1].array()).array()*temp.transpose().array();
+//			g = z[i-1].array()*(1 - z[i-1].array()).array()*temp.transpose().array();
+			g = d_func.array()*temp.transpose().array();
 			//更新参数 
 			MatrixXd w_new = net.get_w(i-1).array() - rate*w_e.array()/x_train.cols();
 			VectorXd b_new = net.get_b(i-1).array() + rate*b_e.array().rowwise().mean();
@@ -52,6 +57,21 @@ bool Train::train(Net &net, int n){
 			net.update_b(i-1, b_new);
 		}
 	} 
+}
+
+MatrixXd Train::get_d(Net &net, int lay, const MatrixXd &z){
+	if(lay == 0){
+		return z;
+	}
+	string func = net.get_FUNC(lay-1);
+	if(!func.compare("sigmoid"))
+		return net.d_sigmoid(z);
+	else if(!func.compare("relu"))
+		return net.d_relu(z);
+	else if(!func.compare("linear"))
+		return net.d_linear(z);
+	else
+		return net.d_sigmoid(z);
 }
 
 bool Train::train(Rbf &rbf, int n){
@@ -106,7 +126,7 @@ bool Train::train(Rbf &rbf, int n){
 }
 
 bool Train::train(Clustering &clus, int n){
-	clus.train(x_train, y_train, n, "k_means");
+	clus.train(x_train, y_train, n, "lvq");
 }
 
 void Train::show_cal(){

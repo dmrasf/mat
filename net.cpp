@@ -52,8 +52,8 @@ int Net::get_NUM_PAR() const {
 	return sum;
 }
 
-const vector<string>& Net::get_FUNC(){
-	return func;
+const string& Net::get_FUNC(int n){
+	return func[n];
 } 
 
 bool Net::add_init_x(int n){
@@ -72,12 +72,19 @@ MatrixXd Net::sigmoid(const MatrixXd &input){
 MatrixXd Net::d_sigmoid(const MatrixXd &mat){
 	return mat.array()*(1 - mat.array()).array();
 }
-
 MatrixXd Net::relu(const MatrixXd &input){
-	
+	return (input.array()+input.array().abs())/2;
 }
-double Net::d_relu(const MatrixXd &mat){
-	
+MatrixXd Net::d_relu(const MatrixXd &input){
+	return (input.array()+input.array().abs())/(input.array()+input.array().abs()+0.000000001);
+}
+MatrixXd Net::linear(const MatrixXd &mat){
+	return mat;
+}
+MatrixXd Net::d_linear(const MatrixXd &mat){
+	MatrixXd t = mat;
+	t.setOnes();
+	return t;
 }
 
 MatrixXd Net::predict(const MatrixXd &x_test){
@@ -93,6 +100,8 @@ MatrixXd Net::predict(const MatrixXd &x_test){
 		std::string fuc = func[i];
 		if(!fuc.compare("sigmoid"))
 			z = sigmoid(e);
+		else if(!fuc.compare("linear"))
+			z = linear(e);
 		else if(!fuc.compare("relu"))
 			z = relu(e);
 		else
@@ -123,6 +132,8 @@ bool Net::calculate(MatrixXd &x, vector<MatrixXd> &in, vector<MatrixXd> &out){
 			z = sigmoid(e);
 		else if(!fuc.compare("relu"))
 			z = relu(e);
+		else if(!fuc.compare("linear"))
+			z = e;
 		else
 			z = sigmoid(e);
 		in.push_back(e);	
@@ -154,11 +165,12 @@ bool Net::load_par(const string &path){
 	istringstream line(pars);
 	while(getline(line, par, ' ')){
 		lays.push_back(stoi(par));
+//		cout << stoi(par) << endl;
 	}
 	//清理掉原有的参数 
 	layers.clear();
 	weights.clear(); 
-	func.clear();
+	func.clear(); 
 	Input = lays[0];
 	Output = lays.back();
 	add_init_x(Input);
