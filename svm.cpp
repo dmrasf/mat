@@ -32,6 +32,7 @@ void Svm::train(const MatrixXd &x, const MatrixXd &y){
 	// 最终的收敛条件是 位于界内的a都满足KKT条件
 	// 支持向量机导论 
 	while(numChanged > 0 || examineAll){
+		cout << "运行一次" << endl;
 		numChanged = 0;
 		if(examineAll){
 			for(int i = 0; i != x.cols(); i++)
@@ -123,6 +124,7 @@ int Svm::takeStep(int i1, int i2){
 		b = (b1 + b2) / 2;
 	a(i1) = a1_new;
 	a(i2) = a2_new;
+	cout << "更新一次" << endl; 
 	return 1;
 }
 

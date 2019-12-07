@@ -22,28 +22,110 @@ void train(Clustering &clu, Train &tra, int n = 1, int m = 5);
 void predict(Clustering &clu, int n = 10);
 //读取图片 
 bool read_bmp(const char*); 
-void data(MatrixXd&, const char*, int m);
+void data(MatrixXd&, const string&, int m);
+char itoc(int n){
+	switch(n){
+		case 0:
+			return '0';
+		case 1:
+			return '1';
+		case 2:
+			return '2';
+		case 3:
+			return '3';
+		case 4:
+			return '4';
+		case 5:
+			return '5';
+		case 6:
+			return '6';
+		case 7:
+			return '7';
+		case 8:
+			return '8';
+		case 9:
+			return '9';
+		default:
+			return ' ';
+	}
+}
 int main()
 {
+	vector<Svm> svm_45;
+	int ij[45][2];
 	
-	MatrixXd x(2, 16), y(1, 16);
-	x << 1, 1, 1, 2, 2, 3, 3, 3, 1, 2, 2, 3, 4, 4, 4, 4,
-	     4, 2, 3, 4, 3, 4, 3, 2, 1, 2, 1, 1, 4, 3, 2, 1;
-	y << 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1;
+	string path_i = "train_0.csv";
+	string path_j = "train_0.csv";
+	int m = 0;
+	for(int i = 0; i != 9; i++){
+		for(int j = i + 1; j != 10; j++){
+			char a;
+			path_i[6] = itoc(i);
+			path_j[6] = itoc(j);
+			MatrixXd x_i(784, 30), x_j(784, 30), y_i(1, 30);
+			data(x_i, path_i, 30);
+			data(x_j, path_j, 30);
+			y_i.setOnes();
+			MatrixXd x(784, 60), y(1, 60);
+			x << x_i, x_j;
+			y << y_i, -y_i;
+			Train tra(x, y);
+			Svm svm(30, 0.01, 5);
+			tra.train(svm);
+			svm_45.push_back(svm);
+			ij[m][0] = i;
+			ij[m][1] = j;
+			cout << "i = " << i << " j = " << j << endl;
+			m++;
+		}
+	}
 	
-	Train tra(x, y);
-	Svm svm(3, 0, 3);
-	tra.train(svm);
-	cout << svm.predict(x) << endl;
-	cout << svm.get_a() << endl;
 	
-  	return 0; 
+	
+	MatrixXd x_test(784, 20);
+	data(x_test, "test_x.csv", 20);
+	VectorXd y(20);
+	
+	for(int i = 0; i != x_test.cols(); i++){
+		//初始化预测值  投票选择 
+		int pre[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		for(int j = 0; j != svm_45.size(); j++){
+			VectorXd y_pre = svm_45[j].predict(x_test.col(i));
+			if(y_pre(0) > 0)
+				pre[ij[j][0]]++;
+			else
+				pre[ij[j][1]]++;
+		}
+		int max = 0;
+		for(int j = 0; j != 10; j++){
+			cout << pre[j] << " ";
+			if(max < pre[j]){
+				y(i) = j;;
+				max = pre[j];
+			}
+		}
+		cout << endl;
+	}
+	
+	ifstream r_train_y("test_y.csv");
+	VectorXd test_y(20);
+	int i = 0;
+	string word;
+	while(getline(r_train_y, word, ',')){		
+		test_y(i) = stoi(word);
+		i++;
+		if(i == 20)
+			break;
+	}
+	
+	cout << test_y.transpose() << endl;
+	cout << y.transpose() << endl;
+	
 }
 
 void train(Clustering &clu, Train &tra, int n, int m){
 	MatrixXd x_train(784, m), y_train(1, m);
 	data(x_train, "train_x.csv", m);
-	
 	ifstream r_train_y("train_y.csv");
 	int i = 0;
 	string word;
@@ -78,7 +160,7 @@ void predict(Clustering &clu, int n){
 	cout << "准确率 = " << sum/n << endl;
 }
 
-void data(MatrixXd &x, const char *name, int m){
+void data(MatrixXd &x, const string &name, int m){
 	ifstream r(name);
 	string line;
 	double train_x_[784];
