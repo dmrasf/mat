@@ -32,7 +32,6 @@ void Svm::train(const MatrixXd &x, const MatrixXd &y){
 	// 最终的收敛条件是 位于界内的a都满足KKT条件
 	// 支持向量机导论 
 	while(numChanged > 0 || examineAll){
-		cout << "运行一次" << endl;
 		numChanged = 0;
 		if(examineAll){
 			for(int i = 0; i != x.cols(); i++)
@@ -55,8 +54,10 @@ int Svm::examineExample(int i2){
 	double a2 = a(i2);
 	double E2 = get_E(i2);
 	double r2 = E2*y2;
+	//不满足KKT条件 
 	if((r2 < -tol && a2 < C) || (r2 > tol && a2 > 0)){
 		int i = 0;
+		//选择边界内的点先更新 
 		for(; i != x_train.cols(); i++)
 			if(a(i) > 0 && a(i) < C)
 				break;
@@ -65,7 +66,6 @@ int Svm::examineExample(int i2){
 			if(takeStep(i1, i2))
 				return 1;
 		}
-		
 		int i1 = rand() % x_train.cols();
 		if(takeStep(i1, i2))
 			return 1;
@@ -101,8 +101,9 @@ int Svm::takeStep(int i1, int i2){
 	double k22 = Gaussian_kernel(x_train.col(i2), x_train.col(i2));
 	double eta = 2*k12 - k11 - k22;
 	double a2_new = 0;
+	//eta为f的二阶导数 若eta >= 0 则f的最大值在边界上 
 	if(eta < 0){
-		a2_new = a2 - y2*(get_E(i1) - get_E(i2))/eta;
+		a2_new = a2 - y2*(E1 - E2)/eta;
 		if(a2_new < L) 		a2_new = L;
     	else if(a2_new > H) a2_new = H;
 	}
@@ -111,11 +112,12 @@ int Svm::takeStep(int i1, int i2){
 		else if(L < H)		a2_new = H;
 		else				a2_new = a2;
 	}
+	//更新值很小 
 	if(abs(a2 - a2_new) < 0.001)
 		return 0;
 	double a1_new = a1 + s * (a2 - a2_new);
-	double b1 = b - get_E(i1) - y1*(a1_new - a1)*Gaussian_kernel(x_train.col(i1), x_train.col(i1)) - y2*(a2_new - a2)*Gaussian_kernel(x_train.col(i2), x_train.col(i1));
-	double b2 = b - get_E(i2) - y1*(a1_new - a1)*Gaussian_kernel(x_train.col(i1), x_train.col(i2)) - y2*(a2_new - a2)*Gaussian_kernel(x_train.col(i2), x_train.col(i2));
+	double b1 = b - E1 - y1*(a1_new - a1)*Gaussian_kernel(x_train.col(i1), x_train.col(i1)) - y2*(a2_new - a2)*Gaussian_kernel(x_train.col(i2), x_train.col(i1));
+	double b2 = b - E2 - y1*(a1_new - a1)*Gaussian_kernel(x_train.col(i1), x_train.col(i2)) - y2*(a2_new - a2)*Gaussian_kernel(x_train.col(i2), x_train.col(i2));
 	if(a1_new > 0 && a1_new < C)
 		b = b1;
 	else if(a2_new > 0 && a2_new < C)
@@ -123,8 +125,7 @@ int Svm::takeStep(int i1, int i2){
 	else
 		b = (b1 + b2) / 2;
 	a(i1) = a1_new;
-	a(i2) = a2_new;
-	cout << "更新一次" << endl; 
+	a(i2) = a2_new; 
 	return 1;
 }
 

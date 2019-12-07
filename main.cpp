@@ -10,19 +10,25 @@
 #include <cstdio>
 #include <bitset>
 #include <iomanip>
-
 using namespace Eigen;
 using namespace std;
 
+int ij[45][2];
+
 //预测函数    需要预测的个数 
-void predict(Net &net, int n = 10);
+void predict(Net &net, int pre_num);
 //训练函数   训练参数   训练函数    训练次数   一次训练的个数 
-void train(Net &net, Train &tra, int n = 1, int m = 5000);
-void train(Clustering &clu, Train &tra, int n = 1, int m = 5);
-void predict(Clustering &clu, int n = 10);
+void train(Net &net, Train &tra, int times, int tra_num);
+void train(Clustering &clu, Train &tra, int times, int tra_num);
+void predict(Clustering &clu, int pre_num);
+void train(vector<Svm> &svm_45, Train &tra, int tra_num);
+void predict(vector<Svm> &svm_45, int pre_num);
 //读取图片 
 bool read_bmp(const char*); 
-void data(MatrixXd&, const string&, int m);
+//读取数据    读到哪里	   哪个文件	   读几个数据 
+void data_x(MatrixXd&, const string&, int m);
+void data_y(MatrixXd&, const string&, int m);
+// 0~9 整数转字符 
 char itoc(int n){
 	switch(n){
 		case 0:
@@ -49,11 +55,21 @@ char itoc(int n){
 			return ' ';
 	}
 }
+
 int main()
 {
 	vector<Svm> svm_45;
-	int ij[45][2];
+	Train tra;
 	
+	train(svm_45, tra, 10);
+	predict(svm_45, 1000);
+
+	
+	return 0;
+}
+
+void train(vector<Svm> &svm_45, Train &tra, int tra_num){
+
 	string path_i = "train_0.csv";
 	string path_j = "train_0.csv";
 	int m = 0;
@@ -62,11 +78,11 @@ int main()
 			char a;
 			path_i[6] = itoc(i);
 			path_j[6] = itoc(j);
-			MatrixXd x_i(784, 30), x_j(784, 30), y_i(1, 30);
-			data(x_i, path_i, 30);
-			data(x_j, path_j, 30);
+			MatrixXd x_i(784, tra_num), x_j(784, tra_num), y_i(1, tra_num);
+			data_x(x_i, path_i, tra_num);
+			data_x(x_j, path_j, tra_num);
 			y_i.setOnes();
-			MatrixXd x(784, 60), y(1, 60);
+			MatrixXd x(784, tra_num*2), y(1, tra_num*2);
 			x << x_i, x_j;
 			y << y_i, -y_i;
 			Train tra(x, y);
@@ -79,12 +95,11 @@ int main()
 			m++;
 		}
 	}
-	
-	
-	
-	MatrixXd x_test(784, 20);
-	data(x_test, "test_x.csv", 20);
-	VectorXd y(20);
+} 
+void predict(vector<Svm> &svm_45, int pre_num){
+	MatrixXd x_test(784, pre_num);
+	data_x(x_test, "test_x.csv", pre_num);
+	MatrixXd y(1, pre_num);
 	
 	for(int i = 0; i != x_test.cols(); i++){
 		//初始化预测值  投票选择 
@@ -98,51 +113,36 @@ int main()
 		}
 		int max = 0;
 		for(int j = 0; j != 10; j++){
-			cout << pre[j] << " ";
 			if(max < pre[j]){
-				y(i) = j;;
+				y(0, i) = j;
 				max = pre[j];
 			}
 		}
-		cout << endl;
 	}
 	
-	ifstream r_train_y("test_y.csv");
-	VectorXd test_y(20);
-	int i = 0;
-	string word;
-	while(getline(r_train_y, word, ',')){		
-		test_y(i) = stoi(word);
-		i++;
-		if(i == 20)
-			break;
-	}
+	MatrixXd y_test(1, pre_num);
+	data_y(y_test, "test_y.csv", pre_num);
 	
-	cout << test_y.transpose() << endl;
-	cout << y.transpose() << endl;
+	MatrixXd temp = y_test.row(0).array() - y.row(0).array();
+	temp = temp.array()/(temp.array()+0.000000001);
+	double error = temp.sum()/temp.cols();
 	
-}
+	cout << y_test << endl;
+	cout << y << endl;
+	cout << "准确率 = " << 1 - error << endl;
+} 
 
 void train(Clustering &clu, Train &tra, int n, int m){
 	MatrixXd x_train(784, m), y_train(1, m);
-	data(x_train, "train_x.csv", m);
-	ifstream r_train_y("train_y.csv");
-	int i = 0;
-	string word;
-	while(getline(r_train_y, word, ',')){		
-		y_train(0, i) = stoi(word);
-		i++;
-		if(i == m)
-			break;
-	}
+	data_x(x_train, "train_x.csv", m);
+	data_y(y_train, "train_y.csv", m);
 	tra.get_new(x_train, y_train);
 	tra.train(clu, n);
 }
-
 void predict(Clustering &clu, int n){
 	double sum = 0.0;
 	MatrixXd x_test(784, n), y_test(1, n);
-	data(x_test, "train_x.csv", n);
+	data_x(x_test, "train_x.csv", n);
 	auto y_pre = clu.predict(x_test);
 	ifstream r_test_y("train_y.csv");
 	int i = 0;
@@ -160,7 +160,18 @@ void predict(Clustering &clu, int n){
 	cout << "准确率 = " << sum/n << endl;
 }
 
-void data(MatrixXd &x, const string &name, int m){
+void data_y(MatrixXd &y, const string &name, int m){
+	ifstream r_y(name);
+	int i = 0;
+	string word;
+	while(getline(r_y, word, ',')){		
+		y(0, i) = stoi(word);
+		i++;
+		if(i == m)
+			break;
+	}
+}
+void data_x(MatrixXd &x, const string &name, int m){
 	ifstream r(name);
 	string line;
 	double train_x_[784];
@@ -184,6 +195,7 @@ void data(MatrixXd &x, const string &name, int m){
 	}
 }
 
+//没完成 
 bool read_bmp(const char *name){
 	FILE *bmp = fopen(name, "rb");
 	
@@ -235,6 +247,7 @@ bool read_bmp(const char *name){
 	
 	fclose(bmp);
 }
+
 //预测函数 
 void predict(Net &net, int n){
 
