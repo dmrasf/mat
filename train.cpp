@@ -129,6 +129,10 @@ bool Train::train(Clustering &clus, int n){
 	clus.train(x_train, y_train, n, "lvq");
 }
 
+bool Train::train(Svm &svm){
+	svm.train(x_train, y_train);
+}
+
 void Train::show_cal(){
 	cout << "z0 = " << endl;
 	cout << z[0] << endl;

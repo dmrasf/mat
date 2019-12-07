@@ -2,6 +2,7 @@
 #include "Eigen/Dense"
 #include "net.h"
 #include "rbf.h"
+#include "Svm.h"
 #include "clustering.h"
 #include "train.h"
 #include <fstream>
@@ -24,70 +25,7 @@ bool read_bmp(const char*);
 void data(MatrixXd&, const char*, int m);
 int main()
 {
-//
-//	MatrixXd x(2,16), y(1,16);
-//	x << 3,4,3,4,-4,-2,-5,-3,37,23,54,23,-0.3,-0.5,-0.7,-0.6,
-//		 4,5,3,2,6,7,4,5,-4,-3,-4,-5,-1,-1,-1.3,-0.9; 
-//	y << 0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3;
-//
-//	Clustering clu(4, 2);
-//	Train tra(x, y);
-//	tra.train(clu, 1000);
-//	auto y_pre = clu.predict(x);
-//	cout << "y = " << endl << y << endl;
-//	cout << "y_pre = " << endl << y_pre.transpose() << endl;
-	
-//	int n = 2000;
-//	MatrixXd x(784, n), y(1, n);
-//	data(x, "test_x.csv", n);
-//	ifstream r_y("test_y.csv");
-//	int i = 0;
-//	string word;
-//	while(getline(r_y, word, ',')){		
-//		y(0, i) = stoi(word);
-//		i++;
-//		if(i == n)
-//			break;
-//	}
-//	MatrixXd cla(784,10);
-//	int s[10] = {0,0,0,0,0,0,0,0,0,0};
-//	cla.setZero();
-//	for(int i = 0; i != y.cols(); i++){
-//		cla.col(y(0,i)) = cla.col(y(0,i)).array() + x.col(y(0,i)).array();
-//		s[int(y(0,i))] = s[int(y(0,i))] + 1;
-//	}
-//	for(int i = 0; i != cla.cols(); i++){
-//		cla.col(i) = cla.col(i)/s[i];
-//		cout << s[i] << endl;
-//	} 
-//	MatrixXd lab(1, 10);
-//	lab << 0,1,2,3,4,5,6,7,8,9;
-//	Clustering clu(cla, lab.transpose());
-//	
 
-	
-//	train(clu, tra, 4, 500);
-//	predict(clu, 100);
-	
-	
-//	read_bmp("5.bmp");
-	
-	
-	
-//	
-//	int m = 100;
-//	MatrixXd x(784,m), y(10,m);
-//	data(x, "train_x.csv", m);
-//	y.setZero(); 
-//	ifstream r_train_y("train_y.csv");
-//	int i = 0;
-//	string word;
-//	while(getline(r_train_y, word, ',')){		
-//		y(stoi(word), i) = 1;
-//		i++;
-//		if(i == m)
-//			break;
-//	}
 //	
 //	Rbf r(784,100,10);
 //	Train tra(x, y);
@@ -100,39 +38,11 @@ int main()
 //
 //	cout << "y_tra = " << endl << y.col(1) << endl;
 //	cout << "y_pre = " << endl << r.predict(x).col(1) << endl;
+
 	
 
 		
-//	Net net(784);
-//	net.add_lay(50,"relu");
-//	net.add_lay(10);
-//	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
-//	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
-//	Train tra;
-//	//训练前预测 
-//	predict(net, 10);
-//	//训练前5000个 1次 
-//	train(net, tra, 2, 5000);
-//	net.save_par( "par.csv");
-	
-	Net n;
-	n.load_par("par.csv");
-	predict(n, 100);
 
-//	Net net;
-//	net.add_lay(4, "relu");
-//	net.add_lay(1, "linear");
-//	
-//	MatrixXd x(1, 10),y(1, 10);
-//	x << 1,2,3,4,5,6,7,8,9,10;
-////	y <<0,0,0,0,0,1,1,1,1,1;
-//	y = x.array()*0.2; 
-//	
-//	Train tra(x, y);	
-//	tra.train(net, 5);
-//	
-//	cout << y << endl;
-//	cout << net.predict(x) << endl;
 	
   	return 0; 
 }
@@ -279,7 +189,7 @@ void predict(Net &net, int n){
 		MatrixXd test_x = Map<Matrix<double, 1, 784>>(test_x_);
 		test_x = test_x/255;
 		auto y_pre = net.predict(test_x.transpose());
-		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
+//		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
 		cout << "实际值 = " << test_y_[j] << endl;
 //		cout << y_pre.transpose() << endl;
 		MatrixXd::Index maxRow, maxCol;
@@ -354,5 +264,20 @@ void train(Net &net, Train &tra, int n, int m){
 //		 1,1,1,1,1,2,2,1,1,2,1,2,1,1,2,1,1,
 //		 0.697,0.744,0.634,0.608,0.556,0.403,0.481,0.437,0.666,0.243,0.245,0.343,0.639,0.657,0.360,0.593,0.719,
 //		 0.460,0.376,0.264,0.318,0.215,0.237,0.149,0.211,0.091,0.267,0.057,0.099,0.161,0.198,0.370,0.042,0.103;
-//    y << 1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0;		
-
+//    y << 1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0;	
+	
+//	Net net(784);
+//	net.add_lay(50,"relu");
+//	net.add_lay(10);
+//	cout << "需训练的参数 : " << net.get_NUM_PAR() << "个" << endl;
+//	cout << "共有 : " << net.get_NUM_LAY() << "层" << endl;
+//	Train tra;
+//	//训练前预测 
+//	predict(net, 10);
+//	//训练前5000个 1次 
+//	train(net, tra, 2, 5000);
+//	net.save_par( "par.csv");
+//	
+//	Net n;
+//	n.load_par("parameters.csv");
+//	predict(n, 10000);

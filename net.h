@@ -15,7 +15,7 @@ public:
     Net& operator = (const Net&);
     Net(const Net&);
     virtual bool add_lay(int, const string &fuc = "sigmoid");
-    //计算所有参数 
+    //计算所有参数  
 	int get_NUM_PAR() const;
 	//层数
 	int get_NUM_LAY() const;

@@ -11,22 +11,25 @@ using namespace std;
 class Svm
 {
 public:
-	Svm(const MatrixXd&, const MatrixXd&); 
+	//初始化需要 给一些参数赋值 
+	Svm(double, double, double);
+ 	void train(const MatrixXd&, const MatrixXd&);
 	//高斯核函数 
 	double Gaussian_kernel(const VectorXd&, const VectorXd&);
 	
-	void train(); 
-	//求a  SMO
-	double solve_a(int); 
 	~Svm();
 private:
-	//不为0的a  
+	int examineExample(int);
+	double get_E(int);
+	int find_second_i(int);
+	int takeStep(int, int);
 	VectorXd a;
-	MatrixXd y;
-	//支持向量 
-	MatrixXd x;
-	//常数  软间隔   需要尝试最好的 
-	int C; 
+	MatrixXd y_train; 
+	MatrixXd x_train;
+	double C;
+	double tol;
+	double det;
+	double b = 0;
 };
 
 #endif

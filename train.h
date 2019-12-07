@@ -3,6 +3,7 @@
 #include "net.h"
 #include "rbf.h"
 #include "clustering.h"
+#include "svm.h" 
 
 class Train
 {
@@ -16,6 +17,7 @@ public:
 	bool train(Net&, int);
 	bool train(Rbf&, int);
 	bool train(Clustering&, int);
+	bool train(Svm&);
 	//计算用于训练的数据 
 	bool calculate(Net&);
 	MatrixXd get_d(Net&, int, const MatrixXd&);
