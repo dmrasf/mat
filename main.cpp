@@ -25,24 +25,17 @@ bool read_bmp(const char*);
 void data(MatrixXd&, const char*, int m);
 int main()
 {
-
-//	
-//	Rbf r(784,100,10);
-//	Train tra(x, y);
-//	int n = 5;
-//	Train tr;
-//	while(n--){
-//		tra.train(r,1);
-//		cout << n << endl;
-//	}
-//
-//	cout << "y_tra = " << endl << y.col(1) << endl;
-//	cout << "y_pre = " << endl << r.predict(x).col(1) << endl;
-
 	
-
-		
-
+	MatrixXd x(2, 16), y(1, 16);
+	x << 1, 1, 1, 2, 2, 3, 3, 3, 1, 2, 2, 3, 4, 4, 4, 4,
+	     4, 2, 3, 4, 3, 4, 3, 2, 1, 2, 1, 1, 4, 3, 2, 1;
+	y << 1, 1, 1, 1, 1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1;
+	
+	Train tra(x, y);
+	Svm svm(3, 0, 3);
+	tra.train(svm);
+	cout << svm.predict(x) << endl;
+	cout << svm.get_a() << endl;
 	
   	return 0; 
 }

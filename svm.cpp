@@ -1,17 +1,36 @@
 #include "svm.h"
 #include <algorithm>
+#include <cstdlib>
 
 Svm::Svm(double C, double tol, double det) : C(C), tol(tol), det(det) {
 } 
 
+VectorXd Svm::get_a(){
+	return a;
+}
+
+VectorXd Svm::predict(const MatrixXd &x_test){
+	VectorXd y_pre(x_test.cols());
+	y_pre.setZero();
+	for(int i = 0; i != x_test.cols(); i++){
+		double temp = 0;
+		for(int j = 0; j != x_train.cols(); j++)
+			temp = temp + a(j)*y_train(j)*Gaussian_kernel(x_train.col(j), x_test.col(i));
+		y_pre(i) = temp;
+	}
+	return y_pre.array() + b;
+}
+
 void Svm::train(const MatrixXd &x, const MatrixXd &y){
 	x_train = x;
 	y_train = y;
-	a.setZero(1, x.cols());
+	a = x.row(0);
+	a.setZero();
 	b = 0;
 	int numChanged = 0;
 	int examineAll = 1;
 	// 最终的收敛条件是 位于界内的a都满足KKT条件
+	// 支持向量机导论 
 	while(numChanged > 0 || examineAll){
 		numChanged = 0;
 		if(examineAll){
@@ -46,7 +65,7 @@ int Svm::examineExample(int i2){
 				return 1;
 		}
 		
-		int i1 = rand();
+		int i1 = rand() % x_train.cols();
 		if(takeStep(i1, i2))
 			return 1;
 	}
@@ -74,7 +93,7 @@ int Svm::takeStep(int i1, int i2){
 		L = max(0.0, a2 - a1);
 		H = min(C, C - a1 + a2);
 	}
-	if(abs(L == H) < 0.000001)
+	if(L == H)
 		return 0;
 	double k11 = Gaussian_kernel(x_train.col(i1), x_train.col(i1));
 	double k12 = Gaussian_kernel(x_train.col(i1), x_train.col(i2));

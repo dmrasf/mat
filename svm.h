@@ -16,7 +16,8 @@ public:
  	void train(const MatrixXd&, const MatrixXd&);
 	//¸ßË¹ºËº¯Êý 
 	double Gaussian_kernel(const VectorXd&, const VectorXd&);
-	
+	VectorXd get_a();
+	VectorXd predict(const MatrixXd&);
 	~Svm();
 private:
 	int examineExample(int);
