@@ -28,6 +28,8 @@ bool read_bmp(const char*);
 //读取数据    读到哪里	   哪个文件	   读几个数据 
 void data_x(MatrixXd&, const string&, int m);
 void data_y(MatrixXd&, const string&, int m);
+void save_svm(vector<Svm>&, const string&);
+void load_svm(vector<Svm>&, const string&);
 // 0~9 整数转字符 
 char itoc(int n){
 	switch(n){
@@ -62,8 +64,10 @@ int main()
 	Train tra;
 	
 	train(svm_45, tra, 5); 
+	save_svm(svm_45, "par_svm.csv");
+//	load_svm(svm_45);
 	predict(svm_45, 1000);
-
+	
 	
 	return 0;
 }
@@ -131,6 +135,14 @@ void predict(vector<Svm> &svm_45, int pre_num){
 	cout << y << endl;
 	cout << "准确率 = " << 1 - error << endl;
 } 
+
+void save_svm(vector<Svm> &svm, const string &path){
+	
+}
+
+void load_svm(vector<Svm> &svm, const string &path){
+	
+}
 
 void train(Clustering &clu, Train &tra, int n, int m){
 	MatrixXd x_train(784, m), y_train(1, m);
