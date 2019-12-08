@@ -3,11 +3,28 @@
 #include <cstdlib>
 #include <ctime> 
 
+Svm::Svm(){
+}
+
 Svm::Svm(double C, double tol, double det) : C(C), tol(tol), det(det) {
 } 
 
-VectorXd Svm::get_a(){
+const VectorXd& Svm::get_a(){
 	return a;
+}
+const VectorXi& Svm::get_pos(){
+	return pos;
+}
+double Svm::get_b(){
+	return b;
+}
+
+void Svm::load(VectorXd &a, VectorXi &pos, double b, const MatrixXd &x, const MatrixXd &y){
+	this->a = a;
+	this->b = b;
+	this->pos = pos;
+	this->x_train = x;
+	this->y_train = y;
 }
 
 VectorXd Svm::predict(const MatrixXd &x_test){
@@ -15,8 +32,8 @@ VectorXd Svm::predict(const MatrixXd &x_test){
 	y_pre.setZero();
 	for(int i = 0; i != x_test.cols(); i++){
 		double temp = 0;
-		for(int j = 0; j != x_train.cols(); j++)
-			temp = temp + a(j)*y_train(j)*Gaussian_kernel(x_train.col(j), x_test.col(i));
+		for(int j = 0; j != pos.size(); j++)
+			temp = temp + a(j)*y_train(pos(j))*Gaussian_kernel(x_train.col(pos(j)), x_test.col(i));
 		y_pre(i) = temp;
 	}
 	return y_pre.array() + b;
@@ -50,9 +67,8 @@ void Svm::train(const MatrixXd &x, const MatrixXd &y){
 			examineAll = 0;
 		else if(numChanged == 0)
 			examineAll = 1;
-
 	}
-	delete_a(); 
+	delete_a();
 }
 
 int Svm::examineExample(int i2){
@@ -170,20 +186,16 @@ double Svm::Gaussian_kernel(const VectorXd &xi, const VectorXd &xj){
 void Svm::delete_a(){
 	int sum = (a.array() != 0).count();
 	VectorXd a_new(sum);
-	MatrixXd y_train_new(y_train.rows(), sum); 
-	MatrixXd x_train_new(x_train.rows(), sum);
+	pos.resize(sum);
 	int j = 0;
 	for(int i = 0; i != a.size(); i++){
 		if(a(i) != 0){
+			pos(j) = i;
 			a_new(j) = a(i);
-			x_train_new.col(j) = x_train.col(i);
-			y_train_new.col(j) = y_train.col(i); 
 			j++;
 		}
 	}
 	a = a_new;
-	x_train = x_train_new;
-	y_train = y_train_new;
 }
 
 Svm::~Svm(){

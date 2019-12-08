@@ -62,6 +62,7 @@ int main()
 {
 	vector<Svm> svm_45;
 	Train tra;
+
 	
 	train(svm_45, tra, 5); 
 	save_svm(svm_45, "par_svm.csv");
@@ -73,7 +74,6 @@ int main()
 }
 
 void train(vector<Svm> &svm_45, Train &tra, int tra_num){
-
 	string path_i = "train_0.csv";
 	string path_j = "train_0.csv";
 	int m = 0;
@@ -137,10 +137,19 @@ void predict(vector<Svm> &svm_45, int pre_num){
 } 
 
 void save_svm(vector<Svm> &svm, const string &path){
-	
+	ofstream out(path);
+	out << svm.size() << endl;
+	for(int i = 0; i != svm.size(); i++){
+		out << svm[i].get_a().transpose() << endl;
+		out << svm[i].get_pos().transpose() << endl;
+		cout << svm[i].get_pos().transpose() << endl;
+		out << svm[i].get_b() << endl;
+	}
+	out.close();
 }
 
 void load_svm(vector<Svm> &svm, const string &path){
+	svm.clear();
 	
 }
 

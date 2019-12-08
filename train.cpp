@@ -1,5 +1,4 @@
 #include "train.h"
-
 #include <iostream>
 using namespace std;
 

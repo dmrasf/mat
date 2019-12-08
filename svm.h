@@ -12,11 +12,16 @@ class Svm
 {
 public:
 	//初始化需要 给一些参数赋值 
+	Svm(); 
 	Svm(double, double, double);
  	void train(const MatrixXd&, const MatrixXd&);
 	//高斯核函数 
 	double Gaussian_kernel(const VectorXd&, const VectorXd&);
-	VectorXd get_a();
+	const VectorXd& get_a();
+	const VectorXi& get_pos();
+	double get_b();
+	//读取值 
+	void load(VectorXd&, VectorXi&, double, const MatrixXd&, const MatrixXd&);
 	VectorXd predict(const MatrixXd&);
 	~Svm();
 private:
@@ -29,10 +34,12 @@ private:
 	VectorXd a;
 	MatrixXd y_train; 
 	MatrixXd x_train;
+	//a!=0的位置 
+	VectorXi pos; 
 	VectorXd E;
-	double C;
-	double tol;
-	double det;
+	double C = 30;
+	double tol = 0.09;
+	double det = 5;
 	double b = 0;
 };
 
