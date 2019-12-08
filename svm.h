@@ -22,11 +22,14 @@ public:
 private:
 	int examineExample(int);
 	double get_E(int);
+	//只保留支持向量 
+	void delete_a();
 	int find_second_i(int);
 	int takeStep(int, int);
 	VectorXd a;
 	MatrixXd y_train; 
 	MatrixXd x_train;
+	VectorXd E;
 	double C;
 	double tol;
 	double det;

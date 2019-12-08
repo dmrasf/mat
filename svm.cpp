@@ -1,6 +1,7 @@
 #include "svm.h"
 #include <algorithm>
 #include <cstdlib>
+#include <ctime> 
 
 Svm::Svm(double C, double tol, double det) : C(C), tol(tol), det(det) {
 } 
@@ -24,14 +25,17 @@ VectorXd Svm::predict(const MatrixXd &x_test){
 void Svm::train(const MatrixXd &x, const MatrixXd &y){
 	x_train = x;
 	y_train = y;
-	a = x.row(0);
-	a.setZero();
+	a.setZero(x.cols());
 	b = 0;
+	E = a;
+	for(int i = 0; i != x_train.cols(); i++){
+		E(i) = get_E(i);
+	}
 	int numChanged = 0;
 	int examineAll = 1;
 	// 最终的收敛条件是 位于界内的a都满足KKT条件
 	// 支持向量机导论 
-	while(numChanged > 0 || examineAll){
+	while(numChanged > 0 || examineAll){	
 		numChanged = 0;
 		if(examineAll){
 			for(int i = 0; i != x.cols(); i++)
@@ -46,13 +50,15 @@ void Svm::train(const MatrixXd &x, const MatrixXd &y){
 			examineAll = 0;
 		else if(numChanged == 0)
 			examineAll = 1;
+
 	}
+	delete_a(); 
 }
 
 int Svm::examineExample(int i2){
 	double y2 = y_train(0, i2);
 	double a2 = a(i2);
-	double E2 = get_E(i2);
+	double E2 = E(i2);
 	double r2 = E2*y2;
 	//不满足KKT条件 
 	if((r2 < -tol && a2 < C) || (r2 > tol && a2 > 0)){
@@ -79,11 +85,11 @@ int Svm::takeStep(int i1, int i2){
 		return 0;
 	double a2 = a(i2);
 	double y2 = y_train(0, i2);
-	double E2 = get_E(i2);
+	double E2 = E(i2);
 	double a1 = a(i1);
 	double y1 = y_train(0, i1);
-	double E1 = get_E(i1);
-	double s = y1*y2;
+	double E1 = E(i1);
+	double s = y1*y2; 
 	// 更新范围
 	double L = 0, H = 0;
 	if(y1 == y2){
@@ -99,7 +105,7 @@ int Svm::takeStep(int i1, int i2){
 	double k11 = Gaussian_kernel(x_train.col(i1), x_train.col(i1));
 	double k12 = Gaussian_kernel(x_train.col(i1), x_train.col(i2));
 	double k22 = Gaussian_kernel(x_train.col(i2), x_train.col(i2));
-	double eta = 2*k12 - k11 - k22;
+	double eta = 2*k12 - k11 - k22; 
 	double a2_new = 0;
 	//eta为f的二阶导数 若eta >= 0 则f的最大值在边界上 
 	if(eta < 0){
@@ -125,7 +131,11 @@ int Svm::takeStep(int i1, int i2){
 	else
 		b = (b1 + b2) / 2;
 	a(i1) = a1_new;
-	a(i2) = a2_new; 
+	a(i2) = a2_new;
+	for(int i = 0; i != x_train.cols(); i++){
+		E(i) = get_E(i);
+	}
+	cout << "更新E" << endl; 
 	return 1;
 }
 
@@ -133,8 +143,9 @@ int Svm::takeStep(int i1, int i2){
 int Svm::find_second_i(int i2){
 	int i1 = -1;
 	double maxE = -1;
+	double E2 = get_E(i2);
 	for(int i = 0; i != x_train.cols(); i++){
-		double temp = abs(get_E(i2) - get_E(i));
+		double temp = abs(E2 - E(i));
 		if(maxE < temp){
 			maxE = temp;
 			i1 = i;
@@ -151,9 +162,28 @@ double Svm::get_E(int i2){
 }
 //高斯核函数 
 double Svm::Gaussian_kernel(const VectorXd &xi, const VectorXd &xj){
-	VectorXd temp = (xi.array() - xj.array()).square().colwise().sum();
+	VectorXd temp = (xi.array() - xj.array()).transpose().matrix()*(xi.array() - xj.array()).matrix();
 	temp = (temp/(-2*det*det)).array().exp();
 	return temp(0);
+}
+
+void Svm::delete_a(){
+	int sum = (a.array() != 0).count();
+	VectorXd a_new(sum);
+	MatrixXd y_train_new(y_train.rows(), sum); 
+	MatrixXd x_train_new(x_train.rows(), sum);
+	int j = 0;
+	for(int i = 0; i != a.size(); i++){
+		if(a(i) != 0){
+			a_new(j) = a(i);
+			x_train_new.col(j) = x_train.col(i);
+			y_train_new.col(j) = y_train.col(i); 
+			j++;
+		}
+	}
+	a = a_new;
+	x_train = x_train_new;
+	y_train = y_train_new;
 }
 
 Svm::~Svm(){

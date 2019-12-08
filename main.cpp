@@ -61,7 +61,7 @@ int main()
 	vector<Svm> svm_45;
 	Train tra;
 	
-	train(svm_45, tra, 10);
+	train(svm_45, tra, 5); 
 	predict(svm_45, 1000);
 
 	
