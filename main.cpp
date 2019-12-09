@@ -64,11 +64,14 @@ int main()
 	Train tra;
 
 	
-	train(svm_45, tra, 5); 
-	save_svm(svm_45, "par_svm.csv");
-//	load_svm(svm_45);
+//	train(svm_45, tra, 5); 
+//	save_svm(svm_45, "par_svm.csv");
+	load_svm(svm_45, "par_svm.csv");
 	predict(svm_45, 1000);
 	
+//	Net n;
+//	n.load_par("parameters.csv");
+//	predict(n, 10000);
 	
 	return 0;
 }
@@ -138,11 +141,14 @@ void predict(vector<Svm> &svm_45, int pre_num){
 
 void save_svm(vector<Svm> &svm, const string &path){
 	ofstream out(path);
+	//共有多少个svm 
 	out << svm.size() << endl;
 	for(int i = 0; i != svm.size(); i++){
+		//参数a 
 		out << svm[i].get_a().transpose() << endl;
+		//a!=0 的x_train 的位置   
 		out << svm[i].get_pos().transpose() << endl;
-		cout << svm[i].get_pos().transpose() << endl;
+		//偏置 
 		out << svm[i].get_b() << endl;
 	}
 	out.close();
@@ -150,7 +156,48 @@ void save_svm(vector<Svm> &svm, const string &path){
 
 void load_svm(vector<Svm> &svm, const string &path){
 	svm.clear();
-	
+	ifstream in(path);
+	string pars, par;
+	getline(in, pars);
+	int svm_num = stoi(pars);
+	MatrixXd temp_x, temp_y;
+	data_x(temp_x, "train_x.csv", 100);
+	data_y(temp_y, "train_y.csv", 100);
+	while(svm_num--){
+		Svm s;
+		istringstream line(pars);
+		getline(in, pars);
+		//读取a 
+		VectorXd a;
+		int i = 0;
+		while(getline(line, par, ' ')){
+			 a(i) = stod(par);
+			 i++;
+		}
+		//读取位置 
+		getline(in, pars);
+		line.clear();
+		line.str(pars);
+		i = 0;
+		VectorXi pos;
+		while(getline(line, par, ' ')){
+			pos(i) = stoi(par);
+			i++;
+		}
+		//读取b 
+		getline(line, par);
+		double b = stod(par);
+		MatrixXd x,y;
+		i = 0;
+		for(int j = 0; j != pos.size(); j++){
+			x.col(i) = temp_x.col(pos(j));
+			y.col(i) = temp_y.col(pos(j));
+			i++;
+		}
+		s.load(a, pos, b, x, y);	
+		svm.push_back(s);
+	}
+	in.close();
 }
 
 void train(Clustering &clu, Train &tra, int n, int m){

@@ -32,8 +32,8 @@ VectorXd Svm::predict(const MatrixXd &x_test){
 	y_pre.setZero();
 	for(int i = 0; i != x_test.cols(); i++){
 		double temp = 0;
-		for(int j = 0; j != pos.size(); j++)
-			temp = temp + a(j)*y_train(pos(j))*Gaussian_kernel(x_train.col(pos(j)), x_test.col(i));
+		for(int j = 0; j != x_train.cols(); j++)
+			temp = temp + a(j)*y_train(j)*Gaussian_kernel(x_train.col(j), x_test.col(i));
 		y_pre(i) = temp;
 	}
 	return y_pre.array() + b;
