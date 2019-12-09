@@ -61,17 +61,11 @@ char itoc(int n){
 int main()
 {
 	vector<Svm> svm_45;
-	Train tra;
-
-	
+//	Train tra;
 //	train(svm_45, tra, 5); 
 //	save_svm(svm_45, "par_svm.csv");
 	load_svm(svm_45, "par_svm.csv");
-	predict(svm_45, 1000);
-	
-//	Net n;
-//	n.load_par("parameters.csv");
-//	predict(n, 10000);
+	predict(svm_45, 50);
 	
 	return 0;
 }
@@ -144,6 +138,8 @@ void save_svm(vector<Svm> &svm, const string &path){
 	//共有多少个svm 
 	out << svm.size() << endl;
 	for(int i = 0; i != svm.size(); i++){
+		//参数数量 
+		out << svm[i].get_a().size() << endl << svm[i].get_train_num() << endl;
 		//参数a 
 		out << svm[i].get_a().transpose() << endl;
 		//a!=0 的x_train 的位置   
@@ -155,49 +151,85 @@ void save_svm(vector<Svm> &svm, const string &path){
 }
 
 void load_svm(vector<Svm> &svm, const string &path){
+	int m = 0;
+	for(int i = 0; i != 9; i++){
+		for(int j = i+1; j != 10; j++){
+			ij[m][0] = i; 
+			ij[m][1] = j;
+			m++;
+		}
+	}
 	svm.clear();
 	ifstream in(path);
 	string pars, par;
+	istringstream line;
 	getline(in, pars);
+	//svm的个数 
 	int svm_num = stoi(pars);
-	MatrixXd temp_x, temp_y;
-	data_x(temp_x, "train_x.csv", 100);
-	data_y(temp_y, "train_y.csv", 100);
-	while(svm_num--){
-		Svm s;
-		istringstream line(pars);
+	string path_i = "train_0.csv";
+	string path_j = "train_0.csv";
+	
+	for(int i_svm = 0; i_svm != svm_num; i_svm++){
+		path_i[6] = itoc(ij[i_svm][0]);
+		path_j[6] = itoc(ij[i_svm][1]);
+		//支持向量的个数 
+		getline(in, par);
+		int a_sum = stoi(par);
+		//训练集大小的一半
+		getline(in, par);
+		int tra_num = stoi(par);
+		//定义暂时变量
+		MatrixXd x_i(784, tra_num), x_j(784, tra_num), y_i(1, tra_num);
+		data_x(x_i, path_i, tra_num);
+		data_x(x_j, path_j, tra_num);
+		y_i.setOnes();
+		MatrixXd x_ij(784, tra_num*2), y_ij(1, tra_num*2); 
+		x_ij << x_i,x_j;
+		y_ij << y_i, -y_i;
+		
+		//定义a pos b
+		VectorXd a(a_sum);
+		VectorXi pos(a_sum);
+		double b; 
+		
+		//读取a
 		getline(in, pars);
-		//读取a 
-		VectorXd a;
-		int i = 0;
-		while(getline(line, par, ' ')){
-			 a(i) = stod(par);
-			 i++;
-		}
-		//读取位置 
-		getline(in, pars);
-		line.clear();
 		line.str(pars);
-		i = 0;
-		VectorXi pos;
+		line.clear();
+		int j = 0;
 		while(getline(line, par, ' ')){
-			pos(i) = stoi(par);
-			i++;
+			if(par.empty())
+				continue;
+			a(j) = stod(par);
+			j++;
+		} 
+		//读取pos
+		getline(in, pars);
+		line.str(pars);
+		line.clear();
+		j = 0;
+		while(getline(line, par, ' ')){
+			if(par.empty())
+				continue;
+			pos(j) = stoi(par);
+			j++;
 		}
-		//读取b 
-		getline(line, par);
-		double b = stod(par);
-		MatrixXd x,y;
-		i = 0;
-		for(int j = 0; j != pos.size(); j++){
-			x.col(i) = temp_x.col(pos(j));
-			y.col(i) = temp_y.col(pos(j));
-			i++;
+		//读取b
+		getline(in, par);		
+		b = stod(par);
+
+		//创建新的svm
+		Svm s;
+		MatrixXd x(784, a_sum), y(1, a_sum);
+		for(int i_x = 0; i_x != a_sum; i_x++){
+			x.col(i_x) = x_ij.col(pos(i_x));
+			y.col(i_x) = y_ij.col(pos(i_x));
 		}
-		s.load(a, pos, b, x, y);	
+		s.load(a, pos, b, x, y); 
 		svm.push_back(s);
-	}
+	} 
 	in.close();
+	cout << "读取成功" << endl; 
 }
 
 void train(Clustering &clu, Train &tra, int n, int m){

@@ -20,6 +20,7 @@ public:
 	const VectorXd& get_a();
 	const VectorXi& get_pos();
 	double get_b();
+	int get_train_num();
 	//∂¡»°÷µ 
 	void load(VectorXd&, VectorXi&, double, const MatrixXd&, const MatrixXd&);
 	VectorXd predict(const MatrixXd&);

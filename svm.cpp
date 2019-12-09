@@ -19,6 +19,10 @@ double Svm::get_b(){
 	return b;
 }
 
+int Svm::get_train_num(){
+	return x_train.cols()/2;
+}
+
 void Svm::load(VectorXd &a, VectorXi &pos, double b, const MatrixXd &x, const MatrixXd &y){
 	this->a = a;
 	this->b = b;
