@@ -58,6 +58,18 @@ bool Train::train(Net &net, int n){
 	} 
 }
 
+bool Train::train_BP(Net &net, int n){
+	MatrixXd temp_x = x_train, temp_y = y_train;
+	while(n--){
+		for(int i = 0; i != temp_x.cols(); i++){
+			get_new(temp_x.col(i), temp_y.col(i));
+			train(net, 1);
+		}
+	}
+	x_train = temp_x;
+	y_train = temp_y;
+}
+
 MatrixXd Train::get_d(Net &net, int lay, const MatrixXd &z){
 	if(lay == 0){
 		return z;

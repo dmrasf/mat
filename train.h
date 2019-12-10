@@ -14,7 +14,10 @@ public:
 	//放入训练集 
 	Train(const MatrixXd&, const MatrixXd&);
 	//训练函数 
+	//累积BP 
 	bool train(Net&, int);
+	//单个训练 
+	bool train_BP(Net&, int);
 	bool train(Rbf&, int);
 	bool train(Clustering&, int);
 	bool train(Svm&);
