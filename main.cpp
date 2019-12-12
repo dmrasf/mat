@@ -23,8 +23,9 @@ void train(Clustering &clu, Train &tra, int times, int tra_num);
 void predict(Clustering &clu, int pre_num);
 void train(vector<Svm> &svm_45, Train &tra, int tra_num);
 void predict(vector<Svm> &svm_45, int pre_num);
+void predict(vector<Svm> &svm_45, MatrixXd &x);
 //读取图片 
-bool read_bmp(const char*); 
+bool read_bmp(const char*, MatrixXd &x_test); 
 //读取数据    读到哪里	   哪个文件	   读几个数据 
 void data_x(MatrixXd&, const string&, int m);
 void data_y(MatrixXd&, const string&, int m);
@@ -60,12 +61,24 @@ char itoc(int n){
 
 int main()
 {
+	MatrixXd x(784, 1);
+	read_bmp("4.bmp", x); 
+	x = x/x.maxCoeff();
+	
 	vector<Svm> svm_45;
-//	Train tra;
-//	train(svm_45, tra, 5); 
-//	save_svm(svm_45, "par_svm.csv");
 	load_svm(svm_45, "par_svm.csv");
-	predict(svm_45, 50);
+	
+	predict(svm_45, x);
+	
+	Net n;
+	n.load_par("parameters.csv");
+	auto y_pre = n.predict(x); 
+	cout << y_pre << endl;
+	
+	MatrixXd::Index maxRow, maxCol;
+	y_pre.maxCoeff(&maxRow,&maxCol);
+	
+	cout << "net 预测值 = " << maxRow << endl;
 	
 	return 0;
 }
@@ -133,6 +146,30 @@ void predict(vector<Svm> &svm_45, int pre_num){
 	cout << "准确率 = " << 1 - error << endl;
 } 
 
+void predict(vector<Svm> &svm_45, MatrixXd &x_test){
+	int y;
+	for(int i = 0; i != x_test.cols(); i++){
+		//初始化预测值  投票选择 
+		int pre[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		for(int j = 0; j != svm_45.size(); j++){
+			VectorXd y_pre = svm_45[j].predict(x_test.col(i));
+			if(y_pre(0) > 0)
+				pre[ij[j][0]]++;
+			else
+				pre[ij[j][1]]++;
+		}
+		int max = 0;
+		for(int j = 0; j != 10; j++){
+			if(max < pre[j]){
+				y = j;
+				max = pre[j];
+			}
+		}
+	}
+	cout << "svm 预测值 = " << y << endl;
+} 
+
+
 void save_svm(vector<Svm> &svm, const string &path){
 	ofstream out(path);
 	//共有多少个svm 
@@ -148,6 +185,7 @@ void save_svm(vector<Svm> &svm, const string &path){
 		out << svm[i].get_b() << endl;
 	}
 	out.close();
+	cout << "保存参数成功" << endl;
 }
 
 void load_svm(vector<Svm> &svm, const string &path){
@@ -295,57 +333,45 @@ void data_x(MatrixXd &x, const string &name, int m){
 	}
 }
 
-//没完成 
-bool read_bmp(const char *name){
+//完成 
+bool read_bmp(const char *name, MatrixXd &x_test){
 	FILE *bmp = fopen(name, "rb");
 	
-//	BITMAPFILEHEADER file_h;
-//	BITMAPINFOHEADER info_h;
-//	RGBQUAD rgb;
-//		
-//	fread(&file_h, sizeof(BITMAPFILEHEADER), 1, bmp);
-//	fread(&info_h, sizeof(BITMAPINFOHEADER), 1, bmp);
-//	fread(&rgb, sizeof(RGBQUAD), 1, bmp);
-//	
-//	cout << sizeof(info_h) << endl;
-//	cout << rgb.rgbBlue << endl;
-//	cout << rgb.rgbReserved <<endl;
-//	
-//	cout << info_h.biHeight << endl;
-//	cout << info_h.biWidth << endl;
-//	cout << info_h.biSize << endl;
-//	cout << info_h.biClrUsed << endl;
-//	cout << info_h.biSizeImage << endl;
-//	cout << info_h.biBitCount << endl;
-//	cout << info_h.biPlanes << endl;
-//	
-////	cout << file_h.bfType << endl;
-//	cout << file_h.bfSize << endl;
-//	cout << file_h.bfOffBits << endl;
-//	
-//	fseek(bmp, 62, 0);
-//	int n[280*36];
-//	int m = 0;
-//	for(int i = 0; i != 280; i++){
-//		for(int j = 0; j != 36; j++){
-//			fread(&m, 1, 1, bmp);
-//			cout << setw(5) << (~m)+256; 
-//			n[i*36+j] = (~m)+256;
-//		}
-//		cout << endl;
-//	}
-//	fseek(bmp,0,0);
-	FILE *fw = fopen("we.bmp", "ab");
-//	fwrite(&bmp,sizeof(BITMAPFILEHEADER),1,fw);  //写入文件头
-//	fseek(bmp, 14, 0);
-//	fwrite(&bmp,sizeof(BITMAPINFOHEADER),1,fw);
-//	fseek(bmp, 54, 0);
-//	fwrite(&bmp,sizeof(RGBQUAD),1,fw);
-	fwrite(&bmp,1,10142,fw);
-//	fwrite(&n, 1, 280*36, fw);
-	fclose(fw); 
+	BITMAPFILEHEADER file_h;
+	BITMAPINFOHEADER info_h;
+	RGBQUAD rgb;
+		
+	fread(&file_h, sizeof(BITMAPFILEHEADER), 1, bmp);
+	fread(&info_h, sizeof(BITMAPINFOHEADER), 1, bmp);
+	fread(&rgb, sizeof(RGBQUAD), 1, bmp);
 	
+	fseek(bmp, 62, 0);
+	int m = 0;
+	MatrixXd x(info_h.biHeight, info_h.biWidth), xxx(280, 36);
+	
+	for(int i = 0; i != 280; i++){
+		for(int j = 0; j != 36; j++){
+			fread(&m, 1, 1, bmp);
+			if(j == 35)	continue;
+			xxx(280-1-i, j) = (~m)+256;
+			int n = (~m)+256, yu = 1;
+			for(int pi = 0; pi != 8; pi++){
+				int temp = n;
+				x(i, j*8+pi) = ((temp>>(7-pi))&yu);
+			}
+		}
+	}	
 	fclose(bmp);
+	MatrixXd xx(28, 28);
+	for(int i = 0; i != 28; i++){
+		for(int j = 0; j != 28; j++){
+			auto temp1 = x.middleCols(j*10, 10);
+			auto temp = temp1.middleRows(i*10, 10);
+			xx(i, j) = temp.sum();
+			x_test(i*28+j, 0) = xx(i, j);
+		}
+	}
+	cout << xx << endl; 
 }
 
 //预测函数 
@@ -377,7 +403,7 @@ void predict(Net &net, int n){
 		MatrixXd test_x = Map<Matrix<double, 1, 784>>(test_x_);
 		test_x = test_x/255;
 		auto y_pre = net.predict(test_x.transpose());
-//		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
+		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
 		cout << "实际值 = " << test_y_[j] << endl;
 //		cout << y_pre.transpose() << endl;
 		MatrixXd::Index maxRow, maxCol;
