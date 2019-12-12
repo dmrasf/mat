@@ -23,7 +23,7 @@ void train(Clustering &clu, Train &tra, int times, int tra_num);
 void predict(Clustering &clu, int pre_num);
 void train(vector<Svm> &svm_45, Train &tra, int tra_num);
 void predict(vector<Svm> &svm_45, int pre_num);
-void predict(vector<Svm> &svm_45, MatrixXd &x);
+MatrixXd predict(vector<Svm> &svm_45, MatrixXd &x);
 //读取图片 
 bool read_bmp(const char*, MatrixXd &x_test); 
 //读取数据    读到哪里	   哪个文件	   读几个数据 
@@ -64,20 +64,16 @@ int main()
 	MatrixXd x(784, 1);
 	read_bmp("4.bmp", x); 
 	x = x/x.maxCoeff();
-	
 	vector<Svm> svm_45;
 	load_svm(svm_45, "par_svm.csv");
-	
-	predict(svm_45, x);
+	cout << "svm 预测值 = " << predict(svm_45, x) << endl;
 	
 	Net n;
 	n.load_par("parameters.csv");
 	auto y_pre = n.predict(x); 
-	cout << y_pre << endl;
-	
+	cout << y_pre.transpose() << endl; 
 	MatrixXd::Index maxRow, maxCol;
 	y_pre.maxCoeff(&maxRow,&maxCol);
-	
 	cout << "net 预测值 = " << maxRow << endl;
 	
 	return 0;
@@ -115,6 +111,22 @@ void predict(vector<Svm> &svm_45, int pre_num){
 	data_x(x_test, "test_x.csv", pre_num);
 	MatrixXd y(1, pre_num);
 	
+	y = predict(svm_45, x_test);
+	
+	MatrixXd y_test(1, pre_num);
+	data_y(y_test, "test_y.csv", pre_num);
+	
+	MatrixXd temp = y_test.row(0).array() - y.row(0).array();
+	temp = temp.array()/(temp.array()+0.000000001);
+	double error = temp.sum()/temp.cols();
+	
+	cout << y_test << endl;
+	cout << y << endl;
+	cout << "准确率 = " << 1 - error << endl;
+} 
+
+MatrixXd predict(vector<Svm> &svm_45, MatrixXd &x_test){
+	MatrixXd y(1, x_test.cols());
 	for(int i = 0; i != x_test.cols(); i++){
 		//初始化预测值  投票选择 
 		int pre[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -133,40 +145,7 @@ void predict(vector<Svm> &svm_45, int pre_num){
 			}
 		}
 	}
-	
-	MatrixXd y_test(1, pre_num);
-	data_y(y_test, "test_y.csv", pre_num);
-	
-	MatrixXd temp = y_test.row(0).array() - y.row(0).array();
-	temp = temp.array()/(temp.array()+0.000000001);
-	double error = temp.sum()/temp.cols();
-	
-	cout << y_test << endl;
-	cout << y << endl;
-	cout << "准确率 = " << 1 - error << endl;
-} 
-
-void predict(vector<Svm> &svm_45, MatrixXd &x_test){
-	int y;
-	for(int i = 0; i != x_test.cols(); i++){
-		//初始化预测值  投票选择 
-		int pre[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		for(int j = 0; j != svm_45.size(); j++){
-			VectorXd y_pre = svm_45[j].predict(x_test.col(i));
-			if(y_pre(0) > 0)
-				pre[ij[j][0]]++;
-			else
-				pre[ij[j][1]]++;
-		}
-		int max = 0;
-		for(int j = 0; j != 10; j++){
-			if(max < pre[j]){
-				y = j;
-				max = pre[j];
-			}
-		}
-	}
-	cout << "svm 预测值 = " << y << endl;
+	return y;
 } 
 
 
@@ -347,26 +326,34 @@ bool read_bmp(const char *name, MatrixXd &x_test){
 	
 	fseek(bmp, 62, 0);
 	int m = 0;
-	MatrixXd x(info_h.biHeight, info_h.biWidth), xxx(280, 36);
+	MatrixXd x(info_h.biHeight, info_h.biWidth);
 	
-	for(int i = 0; i != 280; i++){
-		for(int j = 0; j != 36; j++){
+	int num_byte = info_h.biWidth/32;
+	num_byte += (num_byte*32 < info_h.biWidth);
+	
+	//按像素读取位图  功能比较单一   
+	for(int i = 0; i != info_h.biHeight; i++){
+		for(int j = 0; j != num_byte*4; j++){
+			//按8位读取一个 字节 每个字节8个像素 
 			fread(&m, 1, 1, bmp);
-			if(j == 35)	continue;
-			xxx(280-1-i, j) = (~m)+256;
-			int n = (~m)+256, yu = 1;
+			int n = (~m)+256;
 			for(int pi = 0; pi != 8; pi++){
 				int temp = n;
-				x(i, j*8+pi) = ((temp>>(7-pi))&yu);
+				if(j*8+pi >= info_h.biWidth) 	continue;
+				x(info_h.biHeight-1-i, j*8+pi) = ((temp>>(7-pi))&int(1));
 			}
 		}
 	}	
 	fclose(bmp);
+	
+	//可将任意大小的图片变为28X28 
+	int sf_h = info_h.biHeight/28;
+	int sf_w = info_h.biWidth/28;
 	MatrixXd xx(28, 28);
 	for(int i = 0; i != 28; i++){
 		for(int j = 0; j != 28; j++){
-			auto temp1 = x.middleCols(j*10, 10);
-			auto temp = temp1.middleRows(i*10, 10);
+			auto temp1 = x.middleCols(j*sf_w, sf_w);
+			auto temp = temp1.middleRows(i*sf_h, sf_h);
 			xx(i, j) = temp.sum();
 			x_test(i*28+j, 0) = xx(i, j);
 		}
