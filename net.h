@@ -34,13 +34,15 @@ public:
 	//获取参数 更新参数用 
 	const MatrixXd& get_w(int);
 	const VectorXd& get_b(int); 
-	//不同的激活函数 及导 
+	//不同的激活函数 及导数 
 	MatrixXd sigmoid(const MatrixXd&);
 	MatrixXd d_sigmoid(const MatrixXd&); 
 	MatrixXd relu(const MatrixXd&);
 	MatrixXd d_relu(const MatrixXd&);
 	MatrixXd linear(const MatrixXd&);
 	MatrixXd d_linear(const MatrixXd&);
+	MatrixXd softmax(const MatrixXd&);
+	MatrixXd d_softmax(const MatrixXd&);
 	virtual ~Net();
 protected://派生类可访问 
 	//初始化输入 

@@ -58,7 +58,7 @@ void Clustering::k_means(const MatrixXd &x_train, const MatrixXd &y_train, int n
 			s.row(i).maxCoeff(&maxRow,&maxCol);
 			k(i) = maxCol;
 		}
-		cout << "n = " << n << endl;
+//		cout << "n = " << n << endl;
 	}
 }
 void Clustering::lvq(const MatrixXd &x_train, const MatrixXd &y_train, int n){

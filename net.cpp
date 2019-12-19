@@ -86,6 +86,12 @@ MatrixXd Net::d_linear(const MatrixXd &mat){
 	t.setOnes();
 	return t;
 }
+MatrixXd Net::softmax(const MatrixXd&){
+	
+}
+MatrixXd Net::d_softmax(const MatrixXd&){
+	
+}
 
 MatrixXd Net::predict(const MatrixXd &x_test){
 	int i = 0;

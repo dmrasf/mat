@@ -62,7 +62,7 @@ char itoc(int n){
 int main()
 {
 	MatrixXd x(784, 1);
-	read_bmp("4.bmp", x); 
+	read_bmp("test.bmp", x); 
 	x = x/x.maxCoeff();
 	vector<Svm> svm_45;
 	load_svm(svm_45, "par_svm.csv");
@@ -71,11 +71,16 @@ int main()
 	Net n;
 	n.load_par("parameters.csv");
 	auto y_pre = n.predict(x); 
-	cout << y_pre.transpose() << endl; 
+//	cout << y_pre.transpose() << endl; 
 	MatrixXd::Index maxRow, maxCol;
 	y_pre.maxCoeff(&maxRow,&maxCol);
 	cout << "net 预测值 = " << maxRow << endl;
 	
+	Clustering clu(10, 784);
+	Train tra;
+	train(clu, tra, 10, 200);
+	cout << "k_means 预测值 = " << clu.predict(x) << endl;;
+
 	return 0;
 }
 
@@ -144,6 +149,7 @@ MatrixXd predict(vector<Svm> &svm_45, MatrixXd &x_test){
 				max = pre[j];
 			}
 		}
+//		cout << i << endl; 
 	}
 	return y;
 } 
@@ -386,16 +392,16 @@ void predict(Net &net, int n){
 			test_x_[i] = stoi(word);
 			i++;
 		}
-		cout << j << endl;
+//		cout << j << endl;
 		MatrixXd test_x = Map<Matrix<double, 1, 784>>(test_x_);
 		test_x = test_x/255;
 		auto y_pre = net.predict(test_x.transpose());
-		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
-		cout << "实际值 = " << test_y_[j] << endl;
+//		cout << Map<Matrix<double, 28, 28, RowMajor>>(test_x_) << endl << endl;
+//		cout << "实际值 = " << test_y_[j] << endl;
 //		cout << y_pre.transpose() << endl;
 		MatrixXd::Index maxRow, maxCol;
 		y_pre.maxCoeff(&maxRow,&maxCol);
-		cout << "预测值 = "  << maxRow << endl << endl;
+//		cout << "预测值 = "  << maxRow << endl << endl;
 		sum = sum + (test_y_[j] == maxRow);
 		j++;
 		if(j == n)

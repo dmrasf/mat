@@ -34,7 +34,7 @@ bool Train::train(Net &net, int n){
 		//		w = w - w_e/m
 		//	end
 		//
-		
+		//该层激活函数的对输入的偏导 
 		MatrixXd d_func = get_d(net, net.get_NUM_LAY(), z.back());
 		MatrixXd g = (z.back() - y_train).array()*d_func.array();
 //		MatrixXd g = (z.back() - y_train).array();//*z.back().array()*(1 - z.back().array()).array();
@@ -137,7 +137,7 @@ bool Train::train(Rbf &rbf, int n){
 }
 
 bool Train::train(Clustering &clus, int n){
-	clus.train(x_train, y_train, n, "lvq");
+	clus.train(x_train, y_train, n, "k_means");
 }
 
 bool Train::train(Svm &svm){
