@@ -1,5 +1,7 @@
 ## C++ 实现的机器学习算法 函数说明
 
+[python版](https://github.com/dmrasf/mat-py)
+
 #### Net
 
 |          函数         |                作用               |
